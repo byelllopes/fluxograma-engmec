@@ -331,7 +331,7 @@
             // 6º SEMESTRE            
             { id: "6.1", codigo: "CET855", nome: "Automação e Controle", creditos: 4, semestre: 6, preReq: ["5.2"] },
             { id: "6.2", codigo: "CET954", nome: "Materiais de Construção Mecânica", creditos: 2, semestre: 6, preReq: ["5.5"] },
-            { id: "6.3", codigo: "CET956", nome: "Processos de Conformação Mecânica", creditos: 4, semestre: 6, preReq: ["5.5"] },
+            { id: "6.3", codigo: "CET956", nome: "Processos de Conformação Mecânica", creditos: 4, semestre: 6, preReq: ["5.5"], ch: 75 },
             { id: "6.4", codigo: "CET957", nome: "Processos de Usinagem I", creditos: 4, semestre: 6, preReq: ["5.3"] },
             { id: "6.5", codigo: "CET958", nome: "Projeto Assistido por Computador", creditos: 2, semestre: 6, preReq: ["5.3","2.5"] },
             { id: "6.6", codigo: "CET953", nome: "Dinâmica das Máquinas", creditos: 4, semestre: 6, preReq: ["3.5","5.2"] },
@@ -498,7 +498,7 @@
             document.getElementById('modal-titulo').innerText = materia.nome;
             document.getElementById('modal-codigo').innerText = materia.codigo;
             document.getElementById('modal-creditos').innerText = materia.creditos;
-            document.getElementById('modal-ch').innerText = materia.creditos * 15; 
+            document.getElementById('modal-ch').innerText = materia.ch || (materia.creditos * 15);
 
             const listaPreReq = document.getElementById('modal-prerequisitos');
             listaPreReq.innerHTML = '';
