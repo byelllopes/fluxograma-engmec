@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fluxograma Interativo - Eng. Mecânica UESC</title>
     <style>
         body {
@@ -11,11 +11,10 @@
             color: #333;
             margin: 0;
             padding: 10px;
-            height: 100vh;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            overflow: hidden; 
+            /* As travas de altura foram removidas para permitir o scroll natural no celular */
         }
         
         .dashboard {
@@ -76,11 +75,8 @@
             flex-direction: row;
             gap: 8px; 
             flex-grow: 1;
-            overflow-x: auto;
-            overflow-y: auto; 
-            padding-bottom: 5px;
-            /* Scroll suave no celular */
-            -webkit-overflow-scrolling: touch;
+            overflow-x: auto; /* Permite rolar para os lados */
+            padding-bottom: 15px; /* Dá um respiro no final da página para não colar na tela */
         }
 
         .semestre {
@@ -107,7 +103,7 @@
             border-radius: 4px;
             font-size: 9px;
             cursor: pointer;
-            padding: 5px 0; /* Um pouco mais alto para o toque */
+            padding: 3px 0;
             margin-bottom: 4px;
             transition: 0.2s;
             color: #333;
@@ -134,8 +130,6 @@
             text-align: center;
             min-height: 48px; 
             position: relative; 
-            /* Evita comportamento nativo de duplo toque no celular */
-            touch-action: manipulation; 
         }
         
         .info-btn {
@@ -145,16 +139,15 @@
             background-color: #e0e0e0;
             color: #555;
             border-radius: 50%;
-            width: 16px; /* Levemente maior */
-            height: 16px;
-            font-size: 10px;
+            width: 14px;
+            height: 14px;
+            font-size: 9px;
             font-weight: bold;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: help;
             border: 1px solid #ccc;
-            z-index: 2; /* Garante que fique acima do card */
         }
         .info-btn:hover {
             background-color: #cce5ff;
@@ -180,12 +173,26 @@
             font-size: 8px;
         }
 
-        .bloqueada { background-color: #f8f9fa; border-color: #dee2e6; color: #adb5bd; opacity: 0.6; }
-        .parcial { background-color: #fff3cd; border-color: #ffeeba; }
-        .liberada { background-color: #e3f2fd; border-color: #90caf9; }
-        .concluida { background-color: #e8f5e9; border-color: #a5d6a7; }
+        .bloqueada {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #adb5bd;
+            opacity: 0.6;
+        }
+        .parcial {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        .liberada {
+            background-color: #e3f2fd;
+            border-color: #90caf9;
+        }
+        .concluida {
+            background-color: #e8f5e9;
+            border-color: #a5d6a7;
+        }
 
-        /* --- ESTILOS DO MODAL --- */
+        /* --- ESTILOS DO MODAL DE INFORMAÇÕES --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -212,58 +219,25 @@
             font-weight: bold;
             color: #aaa;
             cursor: pointer;
-            padding: 5px; /* Área de toque maior para fechar */
         }
         .fechar-modal:hover { color: #000; }
-        .modal-content h2 { margin-top: 0; font-size: 16px; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 8px; }
-        .modal-content p { font-size: 13px; margin: 6px 0; }
-        .modal-lista { font-size: 12px; color: #555; padding-left: 20px; margin-top: 4px; margin-bottom: 12px; }
-
-        /* ==================================================
-           CONFIGURAÇÕES PARA CELULAR (MOBILE RESPONSIVE)
-           ================================================== */
-        @media (max-width: 768px) {
-            body {
-                padding: 5px; 
-            }
-            .dashboard {
-                flex-direction: column; /* Empilha os elementos */
-                align-items: stretch;
-                text-align: center;
-                padding: 10px;
-                gap: 10px;
-            }
-            .progresso-info {
-                flex-direction: column; /* Empilha a barra e o texto */
-                margin: 0;
-                gap: 5px;
-            }
-            .progress-container {
-                width: 100%;
-                max-width: none;
-            }
-            .legenda {
-                justify-content: center; /* Centraliza as legendas */
-                gap: 8px;
-            }
-            .semestre {
-                /* Garante que os blocos tenham um tamanho confortável para o dedo swipar */
-                min-width: 130px; 
-            }
-            .materia {
-                min-height: 55px; /* Mais alto para facilitar o clique */
-            }
-            .info-btn {
-                /* Botão (i) significativamente maior no celular */
-                width: 24px;
-                height: 24px;
-                font-size: 12px;
-                top: 4px;
-                right: 4px;
-            }
-            .materia h3 { font-size: 12px; }
-            .materia p { font-size: 9px; }
-            .materia .creditos { font-size: 9px; }
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+        .modal-content p {
+            font-size: 13px;
+            margin: 6px 0;
+        }
+        .modal-lista {
+            font-size: 12px;
+            color: #555;
+            padding-left: 20px;
+            margin-top: 4px;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -282,7 +256,7 @@
             <div class="legenda-item"><span style="background-color: #e3f2fd; border: 1px solid #90caf9;"></span> Liberada</div>
             <div class="legenda-item"><span style="background-color: #fff3cd; border: 1px solid #ffeeba;"></span> Parcial</div>
             <div class="legenda-item"><span style="background-color: #f8f9fa; border: 1px solid #dee2e6;"></span> Bloqueada</div>
-            <div class="legenda-item"><em>(2 toques = forçar aprovação)</em></div>
+            <div class="legenda-item"><em>(2 cliques = forçar aprovação)</em></div>
         </div>
     </div>
 
