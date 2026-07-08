@@ -77,7 +77,7 @@
             gap: 8px; 
             flex-grow: 1;
             overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: auto; 
             padding-bottom: 5px;
         }
 
@@ -131,7 +131,32 @@
             align-items: center;
             text-align: center;
             min-height: 48px; 
+            position: relative; 
         }
+        
+        .info-btn {
+            position: absolute;
+            top: 2px;
+            right: 3px;
+            background-color: #e0e0e0;
+            color: #555;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            font-size: 9px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: help;
+            border: 1px solid #ccc;
+        }
+        .info-btn:hover {
+            background-color: #cce5ff;
+            color: #004085;
+            border-color: #b8daff;
+        }
+
         .materia h3 {
             margin: 0 0 2px 0;
             font-size: 10px; 
@@ -168,6 +193,54 @@
             background-color: #e8f5e9;
             border-color: #a5d6a7;
         }
+
+        /* --- ESTILOS DO MODAL DE INFORMAÇÕES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 350px;
+            max-width: 90%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .fechar-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .fechar-modal:hover { color: #000; }
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+        .modal-content p {
+            font-size: 13px;
+            margin: 6px 0;
+        }
+        .modal-lista {
+            font-size: 12px;
+            color: #555;
+            padding-left: 20px;
+            margin-top: 4px;
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 <body>
@@ -191,9 +264,22 @@
 
     <div class="grid-semestre" id="fluxograma"></div>
 
+    <div class="modal-overlay" id="info-modal" onclick="fecharModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="fechar-modal" onclick="fecharModal(event)">&times;</span>
+            <h2 id="modal-titulo">Nome da Matéria</h2>
+            <p><strong>Código:</strong> <span id="modal-codigo"></span></p>
+            <p><strong>Créditos:</strong> <span id="modal-creditos"></span> (<span id="modal-ch"></span> horas)</p>
+            
+            <p style="margin-top: 15px;"><strong>Pré-requisitos exigidos:</strong></p>
+            <ul class="modal-lista" id="modal-prerequisitos"></ul>
+
+            <p><strong>Libera as seguintes matérias:</strong></p>
+            <ul class="modal-lista" id="modal-libera"></ul>
+        </div>
+    </div>
+
     <script>
-        // --- 1. BASE DE DADOS DAS MATÉRIAS ---
-        // Você pode editar o campo "codigo" livremente. É ele que vai aparecer na tela!
         const materias = [
             // 1º SEMESTRE
             { id: "1.1", codigo: "CET569", nome: "Geometria Analítica", creditos: 5, semestre: 1, preReq: [] },
@@ -263,12 +349,12 @@
             { id: "7.8", codigo: "CEC025", nome: "Economia Aplicada a Engenharia", creditos: 2, semestre: 7, preReq: [] },
 
             // 8º SEMESTRE
-            { id: "8.1", codigo: "CET970", nome: "Máquinas Hidráulicas e Pneumáticas", creditos: 5, semestre: 8, preReq: ["6.8"] },
+            { id: "8.1", codigo: "CET972", nome: "Processos Especiais de Fabricação", creditos: 3, semestre: 8, preReq: ["6.3"] },            
             { id: "8.2", codigo: "CET968", nome: "Mecanismos", creditos: 4, semestre: 8, preReq: ["3.5"] },
             { id: "8.3", codigo: "OPT001", nome: "Optativa 1", creditos: 4, semestre: 8, preReq: [] },
             { id: "8.4", codigo: "OPT002", nome: "Optativa 2", creditos: 4, semestre: 8, preReq: [] },
             { id: "8.5", codigo: "CET967", nome: "Planejamento e Controle da Produção", creditos: 4, semestre: 8, preReq: ["7.1"] },
-            { id: "8.6", codigo: "CET972", nome: "Processos Especiais de Fabricação", creditos: 3, semestre: 8, preReq: ["6.3"] },            
+            { id: "8.6", codigo: "CET970", nome: "Máquinas Hidráulicas e Pneumáticas", creditos: 5, semestre: 8, preReq: ["6.8"] },
             { id: "8.7", codigo: "CET971", nome: "Sistemas Frigoríficos", creditos: 4, semestre: 8, preReq: ["7.7"] },
             { id: "8.8", codigo: "CET969", nome: "Sistemas Térmicos de Potência", creditos: 4, semestre: 8, preReq: ["7.7"] },
             
@@ -288,13 +374,10 @@
             { id: "10.3", codigo: "FCH693", nome: "Sociologia do Desenvolvimento", creditos: 2, semestre: 10, preReq: [] }
         ];
 
-       const TOTAL_CREDITOS = 256;
-        
-        // 1. Tenta carregar os dados salvos no navegador. Se não tiver, cria vazio.
+        const TOTAL_CREDITOS = 256;
         let concluidas = new Set(JSON.parse(localStorage.getItem('uesc_concluidas')) || []);
         let forcadas = new Set(JSON.parse(localStorage.getItem('uesc_forcadas')) || []);
 
-        // 2. Função para salvar no navegador sempre que houver mudança
         function salvarProgresso() {
             localStorage.setItem('uesc_concluidas', JSON.stringify([...concluidas]));
             localStorage.setItem('uesc_forcadas', JSON.stringify([...forcadas]));
@@ -328,8 +411,8 @@
             document.getElementById('creditos-atuais').innerText = creditosSomados;
             document.getElementById('porcentagem').innerText = porcentagem;
             document.getElementById('barra-progresso').style.width = porcentagem + '%';
-	
-	    salvarProgresso();
+            
+            salvarProgresso();
         }
 
         let lastTap = 0;
@@ -384,20 +467,17 @@
             }
         }
 
-        // --- NOVA LÓGICA DO BOTÃO FECHAR SEMESTRE ---
         function toggleSemestre(sem) {
             const materiasDoSemestre = materias.filter(m => m.semestre === sem);
             const todasConcluidas = materiasDoSemestre.every(m => concluidas.has(m.id));
             
             if (todasConcluidas) {
-                // Se o semestre inteiro estiver verde, desmarca tudo nele (e remove cascata)
                 materiasDoSemestre.forEach(m => {
                     concluidas.delete(m.id);
                     forcadas.delete(m.id);
                 });
                 verificarCascataRemocao();
             } else {
-                // Se não estiver completo, varre a coluna e marca SOMENTE as que já estão Liberadas (preReq ok)
                 materiasDoSemestre.forEach(m => {
                     if (!concluidas.has(m.id)) {
                         const reqConcluidos = m.preReq.filter(req => concluidas.has(req)).length;
@@ -408,6 +488,46 @@
                 });
             }
             atualizarFluxograma();
+        }
+
+        function abrirModal(evento, id) {
+            evento.stopPropagation(); 
+            
+            const materia = materias.find(m => m.id === id);
+            
+            document.getElementById('modal-titulo').innerText = materia.nome;
+            document.getElementById('modal-codigo').innerText = materia.codigo;
+            document.getElementById('modal-creditos').innerText = materia.creditos;
+            document.getElementById('modal-ch').innerText = materia.creditos * 15; 
+
+            const listaPreReq = document.getElementById('modal-prerequisitos');
+            listaPreReq.innerHTML = '';
+            if (materia.preReq.length === 0) {
+                listaPreReq.innerHTML = '<li>Nenhum</li>';
+            } else {
+                materia.preReq.forEach(reqId => {
+                    const reqMat = materias.find(m => m.id === reqId);
+                    listaPreReq.innerHTML += `<li><strong>${reqMat.codigo}</strong> - ${reqMat.nome}</li>`;
+                });
+            }
+
+            const listaLibera = document.getElementById('modal-libera');
+            listaLibera.innerHTML = '';
+            const dependentes = materias.filter(m => m.preReq.includes(id));
+            
+            if (dependentes.length === 0) {
+                listaLibera.innerHTML = '<li>Nenhuma</li>';
+            } else {
+                dependentes.forEach(dep => {
+                    listaLibera.innerHTML += `<li><strong>${dep.codigo}</strong> - ${dep.nome}</li>`;
+                });
+            }
+
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function fecharModal(evento) {
+            document.getElementById('info-modal').style.display = 'none';
         }
 
         function renderizarInterface() {
@@ -439,8 +559,8 @@
                         e.preventDefault();
                     });
                     
-                    // Aqui é onde injetamos o campo codigo ao invés do id!
                     card.innerHTML = `
+                        <div class="info-btn" onclick="abrirModal(event, '${m.id}')">i</div>
                         <h3>${m.codigo}</h3>
                         <p>${m.nome}</p>
                         <p class="creditos">${m.creditos} Cr.</p>
