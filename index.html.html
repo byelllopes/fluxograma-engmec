@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxograma Interativo - Eng. Mecânica UESC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 10px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+        
+        .dashboard {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        .dashboard h1 {
+            margin: 0;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        .progresso-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+            flex-grow: 1;
+            margin: 0 20px;
+        }
+        .progress-container {
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            height: 15px;
+            flex-grow: 1;
+            max-width: 300px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .legenda {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+        .legenda-item span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            vertical-align: middle;
+            margin-right: 3px;
+        }
+
+        .grid-semestre {
+            display: flex;
+            flex-direction: row;
+            gap: 8px; 
+            flex-grow: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 5px;
+        }
+
+        .semestre {
+            display: flex;
+            flex-direction: column;
+            gap: 4px; 
+            flex: 1;
+            min-width: 110px; 
+            background: transparent;
+        }
+        .semestre-titulo {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: #555;
+            padding-bottom: 2px;
+            border-bottom: 2px solid #ccc;
+            margin-bottom: 2px;
+        }
+
+        .btn-completar {
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 9px;
+            cursor: pointer;
+            padding: 3px 0;
+            margin-bottom: 4px;
+            transition: 0.2s;
+            color: #333;
+            font-weight: bold;
+        }
+        .btn-completar:hover {
+            background-color: #a5d6a7;
+            border-color: #81c784;
+        }
+
+        .materia {
+            border: 2px solid #ccc;
+            border-radius: 4px; 
+            padding: 4px; 
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 48px; 
+        }
+        .materia h3 {
+            margin: 0 0 2px 0;
+            font-size: 10px; 
+            color: #000;
+        }
+        .materia p {
+            margin: 0;
+            font-size: 8px; 
+            color: #444;
+            line-height: 1.1;
+        }
+        .materia .creditos {
+            margin-top: 2px;
+            font-weight: bold;
+            color: #666;
+            font-size: 8px;
+        }
+
+        .bloqueada {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #adb5bd;
+            opacity: 0.6;
+        }
+        .parcial {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        .liberada {
+            background-color: #e3f2fd;
+            border-color: #90caf9;
+        }
+        .concluida {
+            background-color: #e8f5e9;
+            border-color: #a5d6a7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <h1>Eng. Mecânica - UESC</h1>
+        <div class="progresso-info">
+            <span>Progresso: <strong id="creditos-atuais">0</strong> / 256 Créditos (<span id="porcentagem">0</span>%)</span>
+            <div class="progress-container">
+                <div class="progress-bar" id="barra-progresso"></div>
+            </div>
+        </div>
+        <div class="legenda">
+            <div class="legenda-item"><span style="background-color: #e8f5e9; border: 1px solid #a5d6a7;"></span> Concluída</div>
+            <div class="legenda-item"><span style="background-color: #e3f2fd; border: 1px solid #90caf9;"></span> Liberada</div>
+            <div class="legenda-item"><span style="background-color: #fff3cd; border: 1px solid #ffeeba;"></span> Parcial</div>
+            <div class="legenda-item"><span style="background-color: #f8f9fa; border: 1px solid #dee2e6;"></span> Bloqueada</div>
+            <div class="legenda-item"><em>(2 cliques = forçar aprovação)</em></div>
+        </div>
+    </div>
+
+    <div class="grid-semestre" id="fluxograma"></div>
+
+    <script>
+        // --- 1. BASE DE DADOS DAS MATÉRIAS ---
+        // Você pode editar o campo "codigo" livremente. É ele que vai aparecer na tela!
+        const materias = [
+            // 1º SEMESTRE
+            { id: "1.1", codigo: "CET569", nome: "Geometria Analítica", creditos: 5, semestre: 1, preReq: [] },
+            { id: "1.2", codigo: "CET160", nome: "Cálculo Diferencial e Integral I", creditos: 6, semestre: 1, preReq: [] },
+            { id: "1.3", codigo: "CET164", nome: "Física I", creditos: 5, semestre: 1, preReq: [] },
+            { id: "1.4", codigo: "CET788", nome: "Física Experimental I", creditos: 1, semestre: 1, preReq: [] },
+            { id: "1.5", codigo: "CET809", nome: "Desenho Mecânico I", creditos: 3, semestre: 1, preReq: [] },
+            { id: "1.6", codigo: "CET789", nome: "Química Geral I", creditos: 5, semestre: 1, preReq: [] },
+            { id: "1.7", codigo: "CET810", nome: "Introdução à Engenharia", creditos: 2, semestre: 1, preReq: [] },
+                        
+            // 2º SEMESTRE
+            { id: "2.1", codigo: "CET831", nome: "Álgebra Linear I", creditos: 6, semestre: 2, preReq: ["1.1"] },
+            { id: "2.2", codigo: "CET162", nome: "Cálculo Diferencial e Integral II", creditos: 6, semestre: 2, preReq: ["1.2"] },
+            { id: "2.3", codigo: "CET171", nome: "Física II", creditos: 5, semestre: 2, preReq: ["1.2","1.3"] },
+            { id: "2.4", codigo: "CET833", nome: "Física Experimental II", creditos: 1, semestre: 2, preReq: ["1.2","1.3","1.4"] },
+            { id: "2.5", codigo: "CET943", nome: "Desenho Mecânico II", creditos: 2, semestre: 2, preReq: ["1.5"] },          
+            { id: "2.6", codigo: "CET835", nome: "Química Geral II", creditos: 3, semestre: 2, preReq: ["1.6"] },
+            { id: "2.7", codigo: "CET836", nome: "Programação I", creditos: 3, semestre: 2, preReq: [] },
+
+            // 3º SEMESTRE            
+            { id: "3.1", codigo: "CET173", nome: "Probabilidade e Estatística", creditos: 4, semestre: 3, preReq: ["1.2"] },
+            { id: "3.2", codigo: "CET167", nome: "Cálculo Diferencial e Integral III", creditos: 6, semestre: 3, preReq: ["2.2"] },            
+            { id: "3.3", codigo: "CET176", nome: "Física III", creditos: 5, semestre: 3, preReq: ["2.2","2.3"] },
+            { id: "3.4", codigo: "CET838", nome: "Física Experimental III", creditos: 1, semestre: 3, preReq: ["2.3","2.4"] },
+            { id: "3.5", codigo: "CET839", nome: "Mecânica Vetorial Estática", creditos: 4, semestre: 3, preReq: ["1.3"] },
+            { id: "3.6", codigo: "CET042", nome: "Ciências dos Materiais", creditos: 4, semestre: 3, preReq: ["2.6"] },
+            { id: "3.7", codigo: "CET840", nome: "Programação II", creditos: 3, semestre: 3, preReq: ["2.7"] },            
+            { id: "3.8", codigo: "CET832", nome: "Gestão Ambiental", creditos: 2, semestre: 3, preReq: [] },
+
+            // 4º SEMESTRE
+            { id: "4.1", codigo: "CET581", nome: "Cálculo Numérico", creditos: 4, semestre: 4, preReq: ["3.2","3.7"] },            
+            { id: "4.2", codigo: "CET174", nome: "Equações Diferenciais Aplicadas I", creditos: 5, semestre: 4, preReq: ["2.1"] },            
+            { id: "4.3", codigo: "CET181", nome: "Física IV", creditos: 5, semestre: 4, preReq: ["3.2","3.3"] },
+            { id: "4.4", codigo: "CET944", nome: "Física Experimental IV", creditos: 1, semestre: 4, preReq: ["3.4"] },
+            { id: "4.5", codigo: "CET946", nome: "Resistência dos Materiais I", creditos: 4, semestre: 4, preReq: ["3.5"] },
+            { id: "4.6", codigo: "CET842", nome: "Eletrotécnica Geral", creditos: 4, semestre: 4, preReq: ["3.3"] },
+            { id: "4.7", codigo: "CET045", nome: "Termodinâmica", creditos: 4, semestre: 4, preReq: ["2.3"] },
+            { id: "4.8", codigo: "CET945", nome: "Metodologia e Projeto de Experimentos", creditos: 2, semestre: 4, preReq: ["3.1"] },
+            
+            // 5º SEMESTRE
+            { id: "5.1", codigo: "CET952", nome: "Metrologia e Controle da Qualidade", creditos: 2, semestre: 5, preReq: ["3.1"] },
+            { id: "5.2", codigo: "CET178", nome: "Equações Diferenciais Aplicadas II", creditos: 5, semestre: 5, preReq: ["4.2"] },
+            { id: "5.3", codigo: "CET948", nome: "Elementos de Máquinas", creditos: 4, semestre: 5, preReq: ["4.5","2.5"] },
+            { id: "5.4", codigo: "CET844", nome: "Eletrônica Aplic. a Disp. de Automação", creditos: 4, semestre: 5, preReq: ["3.3","3.4"] },   
+            { id: "5.5", codigo: "CET947", nome: "Comportamento Mecânico dos Materiais", creditos: 3, semestre: 5, preReq: ["3.6","4.5"] },
+            { id: "5.6", codigo: "CET951", nome: "Mecânica dos Sólidos I", creditos: 4, semestre: 5, preReq: ["4.5"] },        
+            { id: "5.7", codigo: "CET950", nome: "Mecânica dos Fluidos", creditos: 5, semestre: 5, preReq: ["3.2","4.7"] },
+            
+            // 6º SEMESTRE            
+            { id: "6.1", codigo: "CET855", nome: "Automação e Controle", creditos: 4, semestre: 6, preReq: ["5.2"] },
+            { id: "6.2", codigo: "CET954", nome: "Materiais de Construção Mecânica", creditos: 2, semestre: 6, preReq: ["5.5"] },
+            { id: "6.3", codigo: "CET956", nome: "Processos de Conformação Mecânica", creditos: 5, semestre: 6, preReq: ["5.5"] },
+            { id: "6.4", codigo: "CET957", nome: "Processos de Usinagem I", creditos: 4, semestre: 6, preReq: ["5.3"] },
+            { id: "6.5", codigo: "CET958", nome: "Projeto Assistido por Computador", creditos: 2, semestre: 6, preReq: ["5.3","2.5"] },
+            { id: "6.6", codigo: "CET953", nome: "Dinâmica das Máquinas", creditos: 4, semestre: 6, preReq: ["3.5","5.2"] },
+            { id: "6.7", codigo: "CET955", nome: "Mecânica dos Sólidos II", creditos: 4, semestre: 6, preReq: ["5.6"] },
+            { id: "6.8", codigo: "CET960", nome: "Transferência de Calor e Massa", creditos: 4, semestre: 6, preReq: ["5.7"] },
+
+            // 7º SEMESTRE
+            { id: "7.1", codigo: "CET593", nome: "Pesquisa Operacional I", creditos: 4, semestre: 7, preReq: ["2.1"] },
+            { id: "7.2", codigo: "CET962", nome: "Fundição, Soldagem e Trat. Térmicos", creditos: 3, semestre: 7, preReq: ["6.2"] },
+            { id: "7.3", codigo: "CET961", nome: "Engenharia Assistida por Computador", creditos: 2, semestre: 7, preReq: ["4.2"] },            
+            { id: "7.4", codigo: "CET965", nome: "Processos de Usinagem II", creditos: 2, semestre: 7, preReq: ["6.4"] },
+            { id: "7.5", codigo: "CET966", nome: "Projeto Mecânico", creditos: 4, semestre: 7, preReq: ["6.4","6.5","6.3"] },
+            { id: "7.6", codigo: "CET963", nome: "Manufatura Assistida por Computador", creditos: 2, semestre: 7, preReq: ["6.4","6.5"] },
+            { id: "7.7", codigo: "CET964", nome: "Máquinas Térmicas e Processos Contínuos", creditos: 4, semestre: 7, preReq: ["6.8"] },
+            { id: "7.8", codigo: "CEC025", nome: "Economia Aplicada a Engenharia", creditos: 2, semestre: 7, preReq: [] },
+
+            // 8º SEMESTRE
+            { id: "8.1", codigo: "CET970", nome: "Máquinas Hidráulicas e Pneumáticas", creditos: 5, semestre: 8, preReq: ["6.8"] },
+            { id: "8.2", codigo: "CET968", nome: "Mecanismos", creditos: 4, semestre: 8, preReq: ["3.5"] },
+            { id: "8.3", codigo: "OPT001", nome: "Optativa 1", creditos: 4, semestre: 8, preReq: [] },
+            { id: "8.4", codigo: "OPT002", nome: "Optativa 2", creditos: 4, semestre: 8, preReq: [] },
+            { id: "8.5", codigo: "CET967", nome: "Planejamento e Controle da Produção", creditos: 4, semestre: 8, preReq: ["7.1"] },
+            { id: "8.6", codigo: "CET972", nome: "Processos Especiais de Fabricação", creditos: 3, semestre: 8, preReq: ["6.3"] },            
+            { id: "8.7", codigo: "CET971", nome: "Sistemas Frigoríficos", creditos: 4, semestre: 8, preReq: ["7.7"] },
+            { id: "8.8", codigo: "CET969", nome: "Sistemas Térmicos de Potência", creditos: 4, semestre: 8, preReq: ["7.7"] },
+            
+            // 9º SEMESTRE
+            { id: "9.1", codigo: "CET975", nome: "Trabalho de Conclusão de Curso I", creditos: 3, semestre: 9, preReq: ["7.5"] },
+            { id: "9.2", codigo: "FCH690", nome: "Responsabilidade Social e Ética", creditos: 2, semestre: 9, preReq: [] },            
+            { id: "9.3", codigo: "OPT003", nome: "Optativa 3", creditos: 4, semestre: 9, preReq: [] },
+            { id: "9.4", codigo: "OPT004", nome: "Optativa 4", creditos: 4, semestre: 9, preReq: [] },                  
+            { id: "9.5", codigo: "CET973", nome: "Sistemas de Elevação e Transporte", creditos: 4, semestre: 9, preReq: ["7.5"] },
+            { id: "9.6", codigo: "CET974", nome: "Sistemas de Produção e Gestão", creditos: 4, semestre: 9, preReq: ["8.8"] },
+            { id: "9.7", codigo: "FCH691", nome: "Psicologia das Organizações", creditos: 2, semestre: 9, preReq: [] },
+            { id: "9.8", codigo: "CAC097", nome: "Administração Geral", creditos: 3, semestre: 9, preReq: [] },
+
+            // 10º SEMESTRE
+            { id: "10.1", codigo: "CET977", nome: "Trabalho de Conclusão de Curso II", creditos: 3, semestre: 10, preReq: ["9.1"] },
+            { id: "10.2", codigo: "CET1018", nome: "Estágio Obrigatório", creditos: 4, semestre: 10, preReq: ["7.5"] },            
+            { id: "10.3", codigo: "FCH693", nome: "Sociologia do Desenvolvimento", creditos: 2, semestre: 10, preReq: [] }
+        ];
+
+       const TOTAL_CREDITOS = 256;
+        
+        // 1. Tenta carregar os dados salvos no navegador. Se não tiver, cria vazio.
+        let concluidas = new Set(JSON.parse(localStorage.getItem('uesc_concluidas')) || []);
+        let forcadas = new Set(JSON.parse(localStorage.getItem('uesc_forcadas')) || []);
+
+        // 2. Função para salvar no navegador sempre que houver mudança
+        function salvarProgresso() {
+            localStorage.setItem('uesc_concluidas', JSON.stringify([...concluidas]));
+            localStorage.setItem('uesc_forcadas', JSON.stringify([...forcadas]));
+        }
+
+        function atualizarFluxograma() {
+            let creditosSomados = 0;
+
+            materias.forEach(m => {
+                const elemento = document.getElementById(m.id);
+                if (!elemento) return;
+
+                const reqConcluidos = m.preReq.filter(req => concluidas.has(req)).length;
+                const reqTotal = m.preReq.length;
+
+                elemento.classList.remove('bloqueada', 'liberada', 'concluida', 'parcial');
+
+                if (concluidas.has(m.id)) {
+                    elemento.classList.add('concluida'); 
+                    creditosSomados += m.creditos;
+                } else if (reqTotal === 0 || reqConcluidos === reqTotal) {
+                    elemento.classList.add('liberada');  
+                } else if (reqConcluidos > 0 && reqConcluidos < reqTotal) {
+                    elemento.classList.add('parcial');   
+                } else {
+                    elemento.classList.add('bloqueada'); 
+                }
+            });
+
+            const porcentagem = ((creditosSomados / TOTAL_CREDITOS) * 100).toFixed(1);
+            document.getElementById('creditos-atuais').innerText = creditosSomados;
+            document.getElementById('porcentagem').innerText = porcentagem;
+            document.getElementById('barra-progresso').style.width = porcentagem + '%';
+	
+	    salvarProgresso();
+        }
+
+        let lastTap = 0;
+        function tratarClique(id) {
+            let currentTime = new Date().getTime();
+            let tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                alternarForcado(id);
+            } else {
+                alternarNormal(id);
+            }
+            lastTap = currentTime;
+        }
+
+        function alternarNormal(id) {
+            if (concluidas.has(id)) {
+                concluidas.delete(id);
+                forcadas.delete(id);
+                verificarCascataRemocao(); 
+            } else {
+                const materia = materias.find(m => m.id === id);
+                const reqConcluidos = materia.preReq.filter(req => concluidas.has(req)).length;
+                if (reqConcluidos === materia.preReq.length) {
+                    concluidas.add(id);
+                }
+            }
+            atualizarFluxograma();
+        }
+
+        function alternarForcado(id) {
+            if (!concluidas.has(id)) {
+                concluidas.add(id);
+                forcadas.add(id); 
+                atualizarFluxograma();
+            }
+        }
+
+        function verificarCascataRemocao() {
+            let houveMudanca = true;
+            while (houveMudanca) {
+                houveMudanca = false;
+                for (let m of materias) {
+                    if (concluidas.has(m.id) && !forcadas.has(m.id)) {
+                        const reqConcluidos = m.preReq.filter(req => concluidas.has(req)).length;
+                        if (reqConcluidos < m.preReq.length) {
+                            concluidas.delete(m.id);
+                            houveMudanca = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- NOVA LÓGICA DO BOTÃO FECHAR SEMESTRE ---
+        function toggleSemestre(sem) {
+            const materiasDoSemestre = materias.filter(m => m.semestre === sem);
+            const todasConcluidas = materiasDoSemestre.every(m => concluidas.has(m.id));
+            
+            if (todasConcluidas) {
+                // Se o semestre inteiro estiver verde, desmarca tudo nele (e remove cascata)
+                materiasDoSemestre.forEach(m => {
+                    concluidas.delete(m.id);
+                    forcadas.delete(m.id);
+                });
+                verificarCascataRemocao();
+            } else {
+                // Se não estiver completo, varre a coluna e marca SOMENTE as que já estão Liberadas (preReq ok)
+                materiasDoSemestre.forEach(m => {
+                    if (!concluidas.has(m.id)) {
+                        const reqConcluidos = m.preReq.filter(req => concluidas.has(req)).length;
+                        if (reqConcluidos === m.preReq.length) {
+                            concluidas.add(m.id);
+                        }
+                    }
+                });
+            }
+            atualizarFluxograma();
+        }
+
+        function renderizarInterface() {
+            const container = document.getElementById('fluxograma');
+            
+            for (let i = 1; i <= 10; i++) {
+                const materiasDoSemestre = materias
+                    .filter(m => m.semestre === i)
+                    .sort((a, b) => {
+                        const [, numA] = a.id.split('.').map(Number);
+                        const [, numB] = b.id.split('.').map(Number);
+                        return numA - numB;
+                    });
+                
+                const divSemestre = document.createElement('div');
+                divSemestre.className = 'semestre';
+                divSemestre.innerHTML = `
+                    <div class="semestre-titulo">${i}º SEM</div>
+                    <button class="btn-completar" onclick="toggleSemestre(${i})">✔ Fechar Sem.</button>
+                `;
+                
+                materiasDoSemestre.forEach(m => {
+                    const card = document.createElement('div');
+                    card.className = 'materia';
+                    card.id = m.id;
+                    
+                    card.addEventListener('click', (e) => {
+                        tratarClique(m.id);
+                        e.preventDefault();
+                    });
+                    
+                    // Aqui é onde injetamos o campo codigo ao invés do id!
+                    card.innerHTML = `
+                        <h3>${m.codigo}</h3>
+                        <p>${m.nome}</p>
+                        <p class="creditos">${m.creditos} Cr.</p>
+                    `;
+                    divSemestre.appendChild(card);
+                });
+                
+                container.appendChild(divSemestre);
+            }
+            atualizarFluxograma();
+        }
+
+        renderizarInterface();
+    </script>
+</body>
+</html>
