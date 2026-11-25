@@ -3,30 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fluxograma Interativo - Eng. Mecânica UESC</title>
+    <title>Fluxograma e Horários - Eng. Mecânica UESC</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
             padding: 10px;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            /* As travas de altura foram removidas para permitir o scroll natural no celular */
         }
-        
-        .dashboard {
-            background: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        /* --- BARRA SUPERIOR DE NAVEGAÇÃO --- */
+        .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background-color: #e2e6ea;
+            color: #2c3e50;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 7px 13px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            background-color: #d3d9df;
+        }
+        .tab-btn.active {
+            background-color: #2c3e50;
+            color: #fff;
+            border-color: #2c3e50;
+        }
+        .util-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .util-btn {
+            background-color: #fff;
+            color: #444;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .util-btn:hover {
+            background-color: #eef2f6;
+        }
+        .util-btn.primary {
+            background-color: #2c3e50;
+            color: #fff;
+            border-color: #2c3e50;
+        }
+        .util-btn.primary:hover {
+            background-color: #1f2d3b;
+        }
+        .util-btn.danger:hover {
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+            color: #842029;
+        }
+
+        /* --- DASHBOARD FLUXOGRAMA --- */
+        .dashboard {
+            background: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             margin-bottom: 10px;
             flex-shrink: 0;
+        }
+        .dashboard-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .dashboard h1 {
             margin: 0;
@@ -36,18 +111,20 @@
         .progresso-info {
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 13px;
             flex-grow: 1;
-            margin: 0 20px;
         }
         .progress-container {
             background-color: #e0e0e0;
             border-radius: 4px;
-            height: 15px;
+            height: 14px;
             flex-grow: 1;
-            max-width: 300px;
+            min-width: 140px;
+            max-width: 280px;
             overflow: hidden;
+            display: flex;
         }
         .progress-bar {
             height: 100%;
@@ -55,36 +132,88 @@
             width: 0%;
             transition: width 0.3s ease;
         }
+        .progress-bar-cursando {
+            height: 100%;
+            background-color: #9c27b0;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
         .legenda {
             display: flex;
             gap: 10px;
-            font-size: 12px;
+            font-size: 11px;
             flex-wrap: wrap;
+            align-items: center;
         }
         .legenda-item span {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 11px;
+            height: 11px;
             border-radius: 2px;
             vertical-align: middle;
             margin-right: 3px;
         }
+        .fluxo-controles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+        }
+        .busca-fluxo {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 12px;
+            min-width: 220px;
+            flex: 1;
+            max-width: 340px;
+        }
+        .modo-toggle {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+        .modo-btn {
+            border: 1px solid #ccc;
+            background: #f8f9fa;
+            color: #333;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modo-btn.active-concluida {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+            color: #1b5e20;
+        }
+        .modo-btn.active-cursando {
+            background-color: #f3e5f5;
+            border-color: #9c27b0;
+            color: #4a148c;
+        }
 
+        /* --- GRID DO FLUXOGRAMA --- */
         .grid-semestre {
             display: flex;
             flex-direction: row;
             gap: 8px; 
             flex-grow: 1;
-            overflow-x: auto; /* Permite rolar para os lados */
-            padding-bottom: 15px; /* Dá um respiro no final da página para não colar na tela */
+            overflow-x: auto;
+            padding-bottom: 15px;
         }
-
         .semestre {
             display: flex;
             flex-direction: column;
             gap: 4px; 
             flex: 1;
-            min-width: 110px; 
+            min-width: 112px; 
             background: transparent;
         }
         .semestre-titulo {
@@ -96,7 +225,6 @@
             border-bottom: 2px solid #ccc;
             margin-bottom: 2px;
         }
-
         .btn-completar {
             background-color: #e0e0e0;
             border: 1px solid #ccc;
@@ -113,7 +241,6 @@
             background-color: #a5d6a7;
             border-color: #81c784;
         }
-
         .materia {
             border: 2px solid #ccc;
             border-radius: 4px; 
@@ -131,7 +258,12 @@
             min-height: 48px; 
             position: relative; 
         }
-        
+        .materia.busca-dim {
+            opacity: 0.2 !important;
+        }
+        .materia.busca-match {
+            box-shadow: 0 0 0 2px #ff9800;
+        }
         .info-btn {
             position: absolute;
             top: 2px;
@@ -154,7 +286,6 @@
             color: #004085;
             border-color: #b8daff;
         }
-
         .materia h3 {
             margin: 0 0 2px 0;
             font-size: 10px; 
@@ -187,12 +318,284 @@
             background-color: #e3f2fd;
             border-color: #90caf9;
         }
+        .cursando {
+            background-color: #f3e5f5;
+            border-color: #ba68c8;
+        }
         .concluida {
             background-color: #e8f5e9;
             border-color: #a5d6a7;
         }
 
-        /* --- ESTILOS DO MODAL DE INFORMAÇÕES --- */
+        /* --- SEÇÕES DAS OUTRAS ABAS --- */
+        .aba-secao {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 24px;
+        }
+        .aba-secao.ativa {
+            display: flex;
+        }
+        #aba-fluxograma.ativa {
+            display: block;
+        }
+
+        .card-box {
+            background: #fff;
+            padding: 14px 16px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .card-box h2, .card-box h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        /* --- SUB-ABAS DE SEMESTRES (HORÁRIOS ESTÁTICOS) --- */
+        .subtabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .subtab-btn {
+            background: #f1f3f5;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #495057;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .subtab-btn:hover {
+            background: #e2e6ea;
+        }
+        .subtab-btn.active {
+            background: #1976d2;
+            color: #fff;
+            border-color: #1976d2;
+        }
+
+        /* --- TABELAS DE GRADE SEMANAL --- */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        .tabela-grade {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+            font-size: 11px;
+        }
+        .tabela-grade th, .tabela-grade td {
+            border: 1px solid #dee2e6;
+            padding: 5px;
+            text-align: center;
+            vertical-align: top;
+        }
+        .tabela-grade th {
+            background-color: #2c3e50;
+            color: #fff;
+            font-size: 12px;
+            padding: 7px 5px;
+        }
+        .tabela-grade td.col-hora {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+            white-space: nowrap;
+            width: 88px;
+            vertical-align: middle;
+        }
+        .divisor-turno td {
+            background-color: #e9ecef !important;
+            color: #495057;
+            font-weight: bold;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px !important;
+        }
+        .bloco-aula {
+            background-color: #e3f2fd;
+            border-left: 3px solid #1976d2;
+            border-radius: 3px;
+            padding: 4px 5px;
+            margin-bottom: 3px;
+            text-align: left;
+            font-size: 10px;
+            line-height: 1.25;
+        }
+        .bloco-aula:last-child {
+            margin-bottom: 0;
+        }
+        .bloco-aula.pratica {
+            background-color: #fff8e1;
+            border-left-color: #f57c00;
+        }
+        .bloco-aula.conflito {
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+            color: #842029;
+            font-weight: bold;
+        }
+
+        /* Tabela resumo abaixo da grade estática */
+        .tabela-resumo {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 680px;
+            font-size: 12px;
+        }
+        .tabela-resumo th, .tabela-resumo td {
+            border-bottom: 1px solid #e9ecef;
+            padding: 7px 8px;
+            text-align: left;
+        }
+        .tabela-resumo th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .tabela-resumo tr:hover {
+            background: #f8fbff;
+        }
+
+        /* --- SIMULADOR DE MATRÍCULA --- */
+        .filtros-box {
+            background: #fff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .filtros-box input, .filtros-box select {
+            padding: 7px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        .filtros-box input {
+            flex: 1;
+            min-width: 180px;
+        }
+        .chk-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .alerta-choque {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            display: none;
+        }
+        .lista-ofertas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }
+        .card-oferta {
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .card-oferta:hover {
+            border-color: #90caf9;
+        }
+        .card-oferta.selecionada {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        .card-oferta.conflito {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .oferta-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+        .oferta-cod {
+            font-weight: bold;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+        .badge-status {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .badge-liberada { background: #e3f2fd; color: #0d47a1; }
+        .badge-concluida { background: #e8f5e9; color: #1b5e20; }
+        .badge-cursando { background: #f3e5f5; color: #4a148c; }
+        .badge-parcial { background: #fff3cd; color: #664d03; }
+        .badge-bloqueada { background: #f8f9fa; color: #6c757d; }
+        .oferta-nome {
+            font-size: 13px;
+            font-weight: bold;
+            color: #111;
+        }
+        .oferta-meta {
+            font-size: 11px;
+            color: #555;
+        }
+        .oferta-horario {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0b5ed7;
+            margin-top: 2px;
+        }
+
+        /* --- PLANEJAMENTO & FORMATURA --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-val {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        /* --- MODAL DE INFORMAÇÕES --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -206,8 +609,10 @@
             background-color: white;
             padding: 20px;
             border-radius: 8px;
-            width: 350px;
-            max-width: 90%;
+            width: 390px;
+            max-width: 92%;
+            max-height: 85vh;
+            overflow-y: auto;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             position: relative;
         }
@@ -227,6 +632,7 @@
             color: #2c3e50;
             border-bottom: 2px solid #eee;
             padding-bottom: 8px;
+            padding-right: 22px;
         }
         .modal-content p {
             font-size: 13px;
@@ -243,25 +649,184 @@
 </head>
 <body>
 
-    <div class="dashboard">
-        <h1>Eng. Mecânica - UESC</h1>
-        <div class="progresso-info">
-            <span>Progresso: <strong id="creditos-atuais">0</strong> / 256 Créditos (<span id="porcentagem">0</span>%)</span>
-            <div class="progress-container">
-                <div class="progress-bar" id="barra-progresso"></div>
-            </div>
+    <div class="top-nav">
+        <div class="tabs">
+            <button class="tab-btn active" id="btn-aba-fluxograma" onclick="trocarAba('fluxograma')">Fluxograma</button>
+            <button class="tab-btn" id="btn-aba-horarios-estatico" onclick="trocarAba('horarios-estatico')">Horários 2027.1</button>
+            <button class="tab-btn" id="btn-aba-simulador" onclick="trocarAba('simulador')">Simulador de Grade</button>
+            <button class="tab-btn" id="btn-aba-planejamento" onclick="trocarAba('planejamento')">Previsão de Formatura</button>
         </div>
-        <div class="legenda">
-            <div class="legenda-item"><span style="background-color: #e8f5e9; border: 1px solid #a5d6a7;"></span> Concluída</div>
-            <div class="legenda-item"><span style="background-color: #e3f2fd; border: 1px solid #90caf9;"></span> Liberada</div>
-            <div class="legenda-item"><span style="background-color: #fff3cd; border: 1px solid #ffeeba;"></span> Parcial</div>
-            <div class="legenda-item"><span style="background-color: #f8f9fa; border: 1px solid #dee2e6;"></span> Bloqueada</div>
-            <div class="legenda-item"><em>(2 cliques = forçar aprovação)</em></div>
+        <div class="util-actions">
+            <button class="util-btn" onclick="exportarProgresso()">Exportar</button>
+            <button class="util-btn" onclick="importarProgresso()">Importar</button>
+            <button class="util-btn danger" onclick="resetarProgresso()">Resetar Tudo</button>
         </div>
     </div>
 
-    <div class="grid-semestre" id="fluxograma"></div>
+    <!-- ==================== ABA 1: FLUXOGRAMA ==================== -->
+    <div id="aba-fluxograma" class="aba-secao ativa">
+        <div class="dashboard">
+            <div class="dashboard-row">
+                <h1>Eng. Mecânica - UESC</h1>
+                <div class="progresso-info">
+                    <span>
+                        <strong id="creditos-atuais">0</strong> / 256 Cr. (<span id="porcentagem">0</span>%)
+                        &bull; <strong id="horas-atuais">0</strong> / 4.440h
+                        <span id="info-cursando" style="color:#6a1b9a; font-weight:bold;"></span>
+                    </span>
+                    <div class="progress-container" title="Verde: concluído | Roxo: cursando">
+                        <div class="progress-bar" id="barra-progresso"></div>
+                        <div class="progress-bar-cursando" id="barra-cursando"></div>
+                    </div>
+                </div>
+                <div class="legenda">
+                    <div class="legenda-item"><span style="background-color: #e8f5e9; border: 1px solid #a5d6a7;"></span>Concluída</div>
+                    <div class="legenda-item"><span style="background-color: #f3e5f5; border: 1px solid #ba68c8;"></span>Cursando</div>
+                    <div class="legenda-item"><span style="background-color: #e3f2fd; border: 1px solid #90caf9;"></span>Liberada</div>
+                    <div class="legenda-item"><span style="background-color: #fff3cd; border: 1px solid #ffeeba;"></span>Parcial</div>
+                    <div class="legenda-item"><span style="background-color: #f8f9fa; border: 1px solid #dee2e6;"></span>Bloqueada</div>
+                    <div class="legenda-item"><em>(2 cliques = forçar)</em></div>
+                </div>
+            </div>
+            <div class="fluxo-controles">
+                <input type="text" class="busca-fluxo" id="busca-fluxograma" placeholder="Buscar matéria por código ou nome no fluxograma..." oninput="filtrarFluxograma()">
+                <div class="modo-toggle">
+                    <span>Ao clicar:</span>
+                    <button class="modo-btn active-concluida" id="btn-modo-concluida" onclick="setModoClique('concluida')">✔ Concluída</button>
+                    <button class="modo-btn" id="btn-modo-cursando" onclick="setModoClique('cursando')">● Cursando agora</button>
+                </div>
+            </div>
+        </div>
 
+        <div class="grid-semestre" id="fluxograma"></div>
+    </div>
+
+    <!-- ==================== ABA 2: HORÁRIOS 2027.1 (ESTÁTICO POR SUB-ABAS) ==================== -->
+    <div id="aba-horarios-estatico" class="aba-secao">
+        <div class="card-box">
+            <h2 style="font-size:15px;">Horários Oficiais por Semestre — 2027.1</h2>
+            <div class="subtabs" id="subtabs-semestres"></div>
+        </div>
+
+        <div class="card-box">
+            <h3 id="titulo-grade-estatica" style="font-size:14px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <span>Grade Semanal</span>
+                <span style="font-size:11px; font-weight:normal; color:#666;">Azul: Teórica (T) &bull; Laranja: Prática/Lab (P)</span>
+            </h3>
+            <div class="table-wrap">
+                <table class="tabela-grade">
+                    <thead id="thead-grade-estatica"></thead>
+                    <tbody id="tbody-grade-estatica"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-box">
+            <h3 style="font-size:14px;">Detalhamento das Turmas deste Semestre</h3>
+            <div class="table-wrap">
+                <table class="tabela-resumo">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Disciplina</th>
+                            <th>Turma</th>
+                            <th>CH-Cr</th>
+                            <th>Professor</th>
+                            <th>Local / Sala</th>
+                            <th>Horário</th>
+                            <th>Fluxograma</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-resumo-estatico"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ABA 3: SIMULADOR DE MATRÍCULA ==================== -->
+    <div id="aba-simulador" class="aba-secao">
+        <div class="filtros-box">
+            <input type="text" id="busca-oferta" placeholder="Buscar por código, disciplina ou professor..." oninput="renderizarSimulador()">
+            <select id="filtro-semestre-oferta" onchange="renderizarSimulador()">
+                <option value="ALL">Todos os semestres da oferta</option>
+            </select>
+            <label class="chk-label">
+                <input type="checkbox" id="chk-ocultar-concluidas" onchange="renderizarSimulador()">
+                Ocultar concluídas
+            </label>
+            <label class="chk-label">
+                <input type="checkbox" id="chk-apenas-liberadas" onchange="renderizarSimulador()">
+                Apenas liberadas / parciais
+            </label>
+            <button class="util-btn primary" onclick="sincronizarCursando()">Aplicar em "Cursando"</button>
+            <button class="util-btn danger" onclick="limparSelecaoHorarios()">Limpar Grade</button>
+        </div>
+
+        <div class="alerta-choque" id="alerta-choque"></div>
+
+        <div class="card-box">
+            <h3 style="font-size:14px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <span>Minha Grade Simulada (2027.1)</span>
+                <span id="resumo-selecao" style="font-size:12px; color:#555;">Selecionadas: 0 turmas | Créditos: 0</span>
+            </h3>
+            <div class="table-wrap">
+                <table class="tabela-grade">
+                    <thead>
+                        <tr>
+                            <th>Horário</th>
+                            <th>Segunda</th>
+                            <th>Terça</th>
+                            <th>Quarta</th>
+                            <th>Quinta</th>
+                            <th>Sexta</th>
+                            <th>Sábado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-grade-simulador"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="lista-ofertas" id="lista-ofertas"></div>
+    </div>
+
+    <!-- ==================== ABA 4: FORMATURA, OPTATIVAS & ACC ==================== -->
+    <div id="aba-planejamento" class="aba-secao">
+        <div class="card-box">
+            <h2 style="font-size:15px;">Simulador de Formatura</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="plan-cr-faltam">256</div>
+                    <div class="stat-label">Créditos faltantes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="plan-ch-faltam">4440h</div>
+                    <div class="stat-label">Carga horária faltante</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="plan-mat-faltam">72</div>
+                    <div class="stat-label">Disciplinas restantes</div>
+                </div>
+                <div class="stat-card" style="background:#e8f5e9; border-color:#a5d6a7;">
+                    <div class="stat-val" id="plan-previsao" style="color:#1b5e20;">—</div>
+                    <div class="stat-label" id="plan-sem-restantes">Semestres restantes</div>
+                </div>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:center; font-size:13px;">
+                <label>
+                    <strong>Média de créditos por semestre:</strong>
+                    <input type="number" id="input-media-cr" value="26" min="6" max="42" style="width:65px; padding:4px 6px; margin-left:4px;" oninput="renderizarPlanejamento()">
+                </label>
+                <label class="chk-label">
+                    <input type="checkbox" id="chk-contar-cursando" checked onchange="renderizarPlanejamento()">
+                    Considerar matérias marcadas como "Cursando" como já aprovadas
+                </label>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== MODAL DE INFORMAÇÕES ==================== -->
     <div class="modal-overlay" id="info-modal" onclick="fecharModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="fechar-modal" onclick="fecharModal(event)">&times;</span>
@@ -269,15 +834,21 @@
             <p><strong>Código:</strong> <span id="modal-codigo"></span></p>
             <p><strong>Créditos:</strong> <span id="modal-creditos"></span> (<span id="modal-ch"></span> horas)</p>
             
-            <p style="margin-top: 15px;"><strong>Pré-requisitos exigidos:</strong></p>
+            <p style="margin-top: 12px;"><strong>Pré-requisitos exigidos:</strong></p>
             <ul class="modal-lista" id="modal-prerequisitos"></ul>
 
             <p><strong>Libera as seguintes matérias:</strong></p>
             <ul class="modal-lista" id="modal-libera"></ul>
+
+            <p><strong>Oferta em 2027.1:</strong></p>
+            <ul class="modal-lista" id="modal-oferta-2027"></ul>
         </div>
     </div>
 
     <script>
+        // ============================================================
+        // 1. BASE DE DADOS DO FLUXOGRAMA (ENG. MECÂNICA - UESC)
+        // ============================================================
         const materias = [
             // 1º SEMESTRE
             { id: "1.1", codigo: "CET569", nome: "Geometria Analítica", creditos: 5, semestre: 1, preReq: [], ch: 75 },
@@ -372,45 +943,2620 @@
             { id: "10.3", codigo: "FCH693", nome: "Sociologia do Desenvolvimento", creditos: 2, semestre: 10, preReq: [], ch: 30 }
         ];
 
+        // ============================================================
+        // 2. BASE DE HORÁRIOS 2027.1 (FÁCIL DE ATUALIZAR A CADA SEMESTRE)
+        // ============================================================
+        const ofertas2027_1 = [
+  {
+    "id": "ofer_0",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET160",
+    "codigoNorm": "CET160",
+    "disciplina": "Cálculo I",
+    "chCr": "90-6",
+    "turma": "T07",
+    "professor": "Paulo Henrique Galão",
+    "pavilhao": "2º P. Calmon/ 1º Exatas/ (Seg) 9130",
+    "sala": "(Qua)1208/ (Sex) 9130",
+    "horariosTexto": "Seg 07:30-09:10; Qua 07:30-09:10; Sex 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      },
+      {
+        "dia": "Sexta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_1",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET160",
+    "codigoNorm": "CET160",
+    "disciplina": "Cálculo I (Extra)",
+    "chCr": "90-6",
+    "turma": "T07",
+    "professor": "Carlos Lude Bibo",
+    "pavilhao": "2º Juizado Modelo/ (Seg) sala 216",
+    "sala": "(Qua) e (Sex) 223",
+    "horariosTexto": "Seg 07:30-09:10; Qua 07:30-09:10; Sex 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      },
+      {
+        "dia": "Sexta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_2",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET1164",
+    "codigoNorm": "CET1164",
+    "disciplina": "Física I",
+    "chCr": "75-5",
+    "turma": "T07",
+    "professor": "Jefferson Lira",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(Ter) 1214/ (Qui) 1210",
+    "horariosTexto": "Ter 07:30-10:00; Qui 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "07:30",
+        "fim": "10:00",
+        "inicioMin": 450,
+        "fimMin": 600
+      },
+      {
+        "dia": "Quinta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_3",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET1164",
+    "codigoNorm": "CET1164",
+    "disciplina": "Física I (Extra)",
+    "chCr": "75-5",
+    "turma": "T10",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "2º J. Modelo / 2º Jorge Amado",
+    "sala": "(Seg) 216 / (Sex) 3215",
+    "horariosTexto": "Qua 10:50-12:30; Qui 13:30-16:00",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      },
+      {
+        "dia": "Quinta",
+        "inicio": "13:30",
+        "fim": "16:00",
+        "inicioMin": 810,
+        "fimMin": 960
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_4",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET569",
+    "codigoNorm": "CET569",
+    "disciplina": "Geometria Analítica",
+    "chCr": "75-5",
+    "turma": "T07",
+    "professor": "Geziana Lima",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(Qui) e (Sex) 1211",
+    "horariosTexto": "Seg 09:10-10:50; Sex 09:10-11:40",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      },
+      {
+        "dia": "Sexta",
+        "inicio": "09:10",
+        "fim": "11:40",
+        "inicioMin": 550,
+        "fimMin": 700
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_5",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET569",
+    "codigoNorm": "CET569",
+    "disciplina": "Geometria Analítica (Extra)",
+    "chCr": "75-5",
+    "turma": "T10",
+    "professor": "Calixto John",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(Qui) e (Sex) 1211",
+    "horariosTexto": "Qui 16:00-17:40; Sex 13:30-16:00",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "16:00",
+        "fim": "17:40",
+        "inicioMin": 960,
+        "fimMin": 1060
+      },
+      {
+        "dia": "Sexta",
+        "inicio": "13:30",
+        "fim": "16:00",
+        "inicioMin": 810,
+        "fimMin": 960
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_6",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET788",
+    "codigoNorm": "CET788",
+    "disciplina": "Física Experimental I",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Alex dos Miranda",
+    "pavilhao": "Exatas - térreo",
+    "sala": "Lab 9010",
+    "horariosTexto": "Ter 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_7",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET788",
+    "codigoNorm": "CET788",
+    "disciplina": "Física Experimental I",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Alex dos Miranda",
+    "pavilhao": "Exatas - térreo",
+    "sala": "Lab 9010",
+    "horariosTexto": "Ter 15:10-16:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "15:10",
+        "fim": "16:50",
+        "inicioMin": 910,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_8",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET788",
+    "codigoNorm": "CET788",
+    "disciplina": "Física Experimental I",
+    "chCr": "30-1",
+    "turma": "P04",
+    "professor": "Leandro Kerber",
+    "pavilhao": "Exatas - térreo",
+    "sala": "Lab 9010",
+    "horariosTexto": "Ter 16:50-18:30",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "16:50",
+        "fim": "18:30",
+        "inicioMin": 1010,
+        "fimMin": 1110
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_9",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET788",
+    "codigoNorm": "CET788",
+    "disciplina": "Física Experimental I (Extra)",
+    "chCr": "30-1",
+    "turma": "P05",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "Exatas - térreo",
+    "sala": "Lab 9010",
+    "horariosTexto": "Sex 16:00-17:40",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "16:00",
+        "fim": "17:40",
+        "inicioMin": 960,
+        "fimMin": 1060
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_10",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET789",
+    "codigoNorm": "CET789",
+    "disciplina": "Química Geral I",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Acácia Pinho",
+    "pavilhao": "2º andar Exatas",
+    "sala": "(Ter) 9250/ (Qua) 9254",
+    "horariosTexto": "Ter 10:00-11:40; Qua 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_11",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET789",
+    "codigoNorm": "CET789",
+    "disciplina": "Química Geral I",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Jaci Lima Vilanova Neta",
+    "pavilhao": "2º andar- Manuel Nabuco",
+    "sala": "Lab 45",
+    "horariosTexto": "Seg 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_12",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET789",
+    "codigoNorm": "CET789",
+    "disciplina": "Química Geral I",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Herick Macedo",
+    "pavilhao": "2º andar- Manuel Nabuco",
+    "sala": "Lab 45",
+    "horariosTexto": "Seg 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_13",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET789",
+    "codigoNorm": "CET789",
+    "disciplina": "Química Geral I",
+    "chCr": "30-1",
+    "turma": "P03",
+    "professor": "Herick Macedo",
+    "pavilhao": "2º andar- Manuel Nabuco",
+    "sala": "Lab 45",
+    "horariosTexto": "Seg 15:10-16:50",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "15:10",
+        "fim": "16:50",
+        "inicioMin": 910,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_14",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET789",
+    "codigoNorm": "CET789",
+    "disciplina": "Química Geral I (Extra)",
+    "chCr": "30-1",
+    "turma": "P04",
+    "professor": "Franciani Cassia Sentanin",
+    "pavilhao": "2º andar- Manuel Nabuco",
+    "sala": "Lab 45",
+    "horariosTexto": "Qui 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_15",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET789",
+    "codigoNorm": "CET789",
+    "disciplina": "Química Geral I (Extra)",
+    "chCr": "60-4",
+    "turma": "T10",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "2º andar Exatas",
+    "sala": "(Ter) 9250/ (Qua) 9254",
+    "horariosTexto": "Ter 10:00-11:40; Qua 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_16",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET789",
+    "codigoNorm": "CET789",
+    "disciplina": "Química Geral I (Extra)",
+    "chCr": "30-1",
+    "turma": "P05",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "2º andar- Manuel Nabuco",
+    "sala": "Lab 45",
+    "horariosTexto": "Ter 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_17",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET809",
+    "codigoNorm": "CET809",
+    "disciplina": "Desenho Mecânico I",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Victor Hugo M. de Almeida",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Qua 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_18",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET810",
+    "codigoNorm": "CET810",
+    "disciplina": "Introd. à Eng. Mecânica",
+    "chCr": "15-1",
+    "turma": "T07",
+    "professor": "Nila Cecília F.L. Medeiros",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Qui 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_19",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET809",
+    "codigoNorm": "CET809",
+    "disciplina": "Desenho Mecânico I",
+    "chCr": "60-2",
+    "turma": "P01",
+    "professor": "Victor Hugo M. de Almeida",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Qua 15:10-17:40",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "15:10",
+        "fim": "17:40",
+        "inicioMin": 910,
+        "fimMin": 1060
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_20",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET809",
+    "codigoNorm": "CET809",
+    "disciplina": "Desenho Mecânico I (Extra)",
+    "chCr": "30-2",
+    "turma": "T09",
+    "professor": "Victor Hugo M. de Almeida",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Qui 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_21",
+    "semestre": "1º Semestre - Ingressantes 2027.1",
+    "codigo": "CET809",
+    "codigoNorm": "CET809",
+    "disciplina": "Desenho Mecânico I (Extra)",
+    "chCr": "60-2",
+    "turma": "P02",
+    "professor": "Victor Hugo M. de Almeida",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Qui 15:10-17:40",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "15:10",
+        "fim": "17:40",
+        "inicioMin": 910,
+        "fimMin": 1060
+      }
+    ],
+    "semestreCurto": "1º Sem"
+  },
+  {
+    "id": "ofer_22",
+    "semestre": "2º Semestre (extra) - 2027.1",
+    "codigo": "CET 836",
+    "codigoNorm": "CET836",
+    "disciplina": "Programação I - T07 (Extra)",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Luciano Ângelo",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Ter 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "2º Sem (Extra)"
+  },
+  {
+    "id": "ofer_23",
+    "semestre": "2º Semestre (extra) - 2027.1",
+    "codigo": "CET 836",
+    "codigoNorm": "CET836",
+    "disciplina": "Programação I - P14 (Extra)",
+    "chCr": "30-1",
+    "turma": "P14",
+    "professor": "Luciano Ângelo",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Ter 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "2º Sem (Extra)"
+  },
+  {
+    "id": "ofer_24",
+    "semestre": "2º Semestre (extra) - 2027.1",
+    "codigo": "CET 836",
+    "codigoNorm": "CET836",
+    "disciplina": "Programação I - P15 (Extra)",
+    "chCr": "30-1",
+    "turma": "P15",
+    "professor": "Luciano Ângelo",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Ter 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "2º Sem (Extra)"
+  },
+  {
+    "id": "ofer_25",
+    "semestre": "2º Semestre (extra) - 2027.1",
+    "codigo": "CET 836",
+    "codigoNorm": "CET836",
+    "disciplina": "Programação I - T10 (Extra)",
+    "chCr": "30-2",
+    "turma": "T10",
+    "professor": "Aprígio Augusto",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "9131",
+    "horariosTexto": "Seg 10:00-12:30",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "10:00",
+        "fim": "12:30",
+        "inicioMin": 600,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "2º Sem (Extra)"
+  },
+  {
+    "id": "ofer_26",
+    "semestre": "2º Semestre (extra) - 2027.1",
+    "codigo": "CET 836",
+    "codigoNorm": "CET836",
+    "disciplina": "Programação I - P16 (Extra)",
+    "chCr": "30-1",
+    "turma": "P16",
+    "professor": "Aprígio Augusto",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Sex 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "2º Sem (Extra)"
+  },
+  {
+    "id": "ofer_27",
+    "semestre": "2º Semestre (extra) - 2027.1",
+    "codigo": "CET 836",
+    "codigoNorm": "CET836",
+    "disciplina": "Programação I - P17 (Extra)",
+    "chCr": "30-1",
+    "turma": "P17",
+    "professor": "Aprígio Augusto",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Sex 15:10-16:50",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "15:10",
+        "fim": "16:50",
+        "inicioMin": 910,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "2º Sem (Extra)"
+  },
+  {
+    "id": "ofer_28",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET167",
+    "codigoNorm": "CET167",
+    "disciplina": "Cálculo Dif. Int. III",
+    "chCr": "90-6",
+    "turma": "T07",
+    "professor": "Elisângela Farias",
+    "pavilhao": "2º Pedro Calmon / 2º Exatas",
+    "sala": "(Seg) e (Qua) 1210 / (Sex) 9246",
+    "horariosTexto": "Seg 08:20-10:00; Qua 08:20-10:00; Sex 08:20-10:00",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "08:20",
+        "fim": "10:00",
+        "inicioMin": 500,
+        "fimMin": 600
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "08:20",
+        "fim": "10:00",
+        "inicioMin": 500,
+        "fimMin": 600
+      },
+      {
+        "dia": "Sexta",
+        "inicio": "08:20",
+        "fim": "10:00",
+        "inicioMin": 500,
+        "fimMin": 600
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_29",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 176",
+    "codigoNorm": "CET176",
+    "disciplina": "Física III - (Elétrica cedeu vagas p/ Mecânica)",
+    "chCr": "75-5",
+    "turma": "T07",
+    "professor": "Adriano Hoth",
+    "pavilhao": "2º Pedro Calmon / 2º Exatas",
+    "sala": "(Qui) 9132 / (Sex) 9247",
+    "horariosTexto": "Ter 07:30-10:00; Qui 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "07:30",
+        "fim": "10:00",
+        "inicioMin": 450,
+        "fimMin": 600
+      },
+      {
+        "dia": "Quinta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_30",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 173",
+    "codigoNorm": "CET173",
+    "disciplina": "Probabilidade e Estatística",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Jaênes Miranda Alves",
+    "pavilhao": "2º Pedro Calmon / 1º Exatas",
+    "sala": "(Seg) 1208 / (Ter) 9130",
+    "horariosTexto": "Qui 09:10-10:50; Sex 10:00-11:40",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      },
+      {
+        "dia": "Sexta",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_31",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 042",
+    "codigoNorm": "CET042",
+    "disciplina": "Ciências dos Materiais",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Érica Cristina de Almeida",
+    "pavilhao": "2º andar Exatas",
+    "sala": "9247",
+    "horariosTexto": "Seg 10:00-11:40; Ter 10:00-11:40",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      },
+      {
+        "dia": "Terça",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_32",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET832",
+    "codigoNorm": "CET832",
+    "disciplina": "Gestão Ambiental",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Lúcio Rezende",
+    "pavilhao": "Exatas - térreo",
+    "sala": "9012",
+    "horariosTexto": "Sex 11:40-12:30 (Grade mostra Sex 10:50-12:30)",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_33",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 838",
+    "codigoNorm": "CET838",
+    "disciplina": "Física Experimental III",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Marcelo Krause",
+    "pavilhao": "Exatas - térreo",
+    "sala": "9012",
+    "horariosTexto": "Sex 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_34",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 838",
+    "codigoNorm": "CET838",
+    "disciplina": "Física Experimental III",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "Exatas - térreo",
+    "sala": "9012",
+    "horariosTexto": "Sex 15:10-16:50",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "15:10",
+        "fim": "16:50",
+        "inicioMin": 910,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_35",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 839",
+    "codigoNorm": "CET839",
+    "disciplina": "Mecânica Vetorial - Estática",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Vinícius de O. M. Siqueira",
+    "pavilhao": "2º Exatas / 2º P. Calmon",
+    "sala": "(Seg) 9250 / (Qua) 1207",
+    "horariosTexto": "Seg 11:40-12:30; Qua 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "11:40",
+        "fim": "12:30",
+        "inicioMin": 700,
+        "fimMin": 750
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_36",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 840",
+    "codigoNorm": "CET840",
+    "disciplina": "Programação II",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Edgar Alexander",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Qua 10:00-11:40",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_37",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 840",
+    "codigoNorm": "CET840",
+    "disciplina": "Programação II",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Edgar Alexander",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Qua 11:40-12:30",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "11:40",
+        "fim": "12:30",
+        "inicioMin": 700,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_38",
+    "semestre": "3º Semestre - 2027.1",
+    "codigo": "CET 840",
+    "codigoNorm": "CET840",
+    "disciplina": "Programação II",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Edgar Alexander",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab.",
+    "horariosTexto": "Qui 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "3º Sem"
+  },
+  {
+    "id": "ofer_39",
+    "semestre": "4º Semestre (Extra) - 2027.1",
+    "codigo": "CET 842",
+    "codigoNorm": "CET842",
+    "disciplina": "Eletrotécnica Geral - T07 - Extra",
+    "chCr": "45-3",
+    "turma": "T07",
+    "professor": "Thiago Correia Vieira",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Qua 07:30-10:00",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "07:30",
+        "fim": "10:00",
+        "inicioMin": 450,
+        "fimMin": 600
+      }
+    ],
+    "semestreCurto": "4º Sem (Extra)"
+  },
+  {
+    "id": "ofer_40",
+    "semestre": "4º Semestre (Extra) - 2027.1",
+    "codigo": "CET 842",
+    "codigoNorm": "CET842",
+    "disciplina": "Eletrotécnica Geral - P15 - Extra",
+    "chCr": "30-1",
+    "turma": "P15",
+    "professor": "Thiago Correia Vieira",
+    "pavilhao": "Exatas - térreo",
+    "sala": "9012",
+    "horariosTexto": "Qua 10:00-11:40",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      }
+    ],
+    "semestreCurto": "4º Sem (Extra)"
+  },
+  {
+    "id": "ofer_41",
+    "semestre": "4º Semestre (Extra) - 2027.1",
+    "codigo": "CET 842",
+    "codigoNorm": "CET842",
+    "disciplina": "Eletrotécnica Geral - P16 - Extra",
+    "chCr": "30-1",
+    "turma": "P16",
+    "professor": "Thiago Correia Vieira",
+    "pavilhao": "Exatas - térreo",
+    "sala": "9012",
+    "horariosTexto": "Qui 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "4º Sem (Extra)"
+  },
+  {
+    "id": "ofer_42",
+    "semestre": "4º Semestre (Extra) - 2027.1",
+    "codigo": "CET 842",
+    "codigoNorm": "CET842",
+    "disciplina": "Eletrotécnica Geral - P17 - Extra",
+    "chCr": "30-1",
+    "turma": "P17",
+    "professor": "Thiago Correia Vieira",
+    "pavilhao": "Exatas - térreo",
+    "sala": "9012",
+    "horariosTexto": "Qui 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "4º Sem (Extra)"
+  },
+  {
+    "id": "ofer_43",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET178",
+    "codigoNorm": "CET178",
+    "disciplina": "Equações Dif. Aplicada II",
+    "chCr": "75-5",
+    "turma": "T07",
+    "professor": "Cláudio Soriano",
+    "pavilhao": "1º Exatas / 2º Pedro Calmon",
+    "sala": "(Ter) 9130 / (Qui)1212",
+    "horariosTexto": "Ter 07:30-10:00; Qui 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "07:30",
+        "fim": "10:00",
+        "inicioMin": 450,
+        "fimMin": 600
+      },
+      {
+        "dia": "Quinta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_44",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 844",
+    "codigoNorm": "CET844",
+    "disciplina": "Eletrônica Aplicada",
+    "chCr": "45-3",
+    "turma": "T07",
+    "professor": "Manuedson Pires",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(Qua) 1211",
+    "horariosTexto": "Qua 13:30-16:00",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "13:30",
+        "fim": "16:00",
+        "inicioMin": 810,
+        "fimMin": 960
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_45",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 844",
+    "codigoNorm": "CET844",
+    "disciplina": "Eletrônica Aplicada",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Manuedson Pires",
+    "pavilhao": "Exatas - térreo",
+    "sala": "(Qua) Lab. 9012",
+    "horariosTexto": "Qua 16:00-17:40",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "16:00",
+        "fim": "17:40",
+        "inicioMin": 960,
+        "fimMin": 1060
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_46",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET844",
+    "codigoNorm": "CET844",
+    "disciplina": "Eletrônica Aplicada",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Manuedson Pires",
+    "pavilhao": "Exatas - térreo",
+    "sala": "(Seg) Lab. 9012",
+    "horariosTexto": "Seg 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_47",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 947",
+    "codigoNorm": "CET947",
+    "disciplina": "Comp. Mec. dos Materiais",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Vinícius de O. M. Siqueira",
+    "pavilhao": "1º andar Pedro Calmon",
+    "sala": "(Seg) 1103",
+    "horariosTexto": "Seg 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_48",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 947",
+    "codigoNorm": "CET947",
+    "disciplina": "Comp. Mec. dos Materiais",
+    "chCr": "30-1",
+    "turma": "P07",
+    "professor": "Vinícius de O. M. Siqueira",
+    "pavilhao": "1º andar Pedro Calmon",
+    "sala": "(Seg) 1103",
+    "horariosTexto": "Seg 15:10-16:50",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "15:10",
+        "fim": "16:50",
+        "inicioMin": 910,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_49",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 948",
+    "codigoNorm": "CET948",
+    "disciplina": "Elementos de Máquinas",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "José Carlos de Camargo",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "3104",
+    "horariosTexto": "Qua 07:30-10:50",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "07:30",
+        "fim": "10:50",
+        "inicioMin": 450,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_50",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 950",
+    "codigoNorm": "CET950",
+    "disciplina": "Mecânica dos Fluidos",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Jeane Batista de Carvalho",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Qui) 3108",
+    "horariosTexto": "Qui 09:10-12:30",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "09:10",
+        "fim": "12:30",
+        "inicioMin": 550,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_51",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 950",
+    "codigoNorm": "CET950",
+    "disciplina": "Mecânica dos Fluidos",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Jeane Batista de Carvalho",
+    "pavilhao": "1º andar Exatas",
+    "sala": "(Sex) 9249",
+    "horariosTexto": "Sex 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_52",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 950",
+    "codigoNorm": "CET950",
+    "disciplina": "Mecânica dos Fluidos",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Jeane Batista de Carvalho",
+    "pavilhao": "1º andar Exatas",
+    "sala": "(Sex) 9249",
+    "horariosTexto": "Sex 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_53",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 951",
+    "codigoNorm": "CET951",
+    "disciplina": "Mecânica dos Sólidos I",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Vinícius de O. M. Siqueira",
+    "pavilhao": "2º andar Exatas",
+    "sala": "9246",
+    "horariosTexto": "Ter 13:30-16:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "13:30",
+        "fim": "16:50",
+        "inicioMin": 810,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_54",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 952",
+    "codigoNorm": "CET952",
+    "disciplina": "Metrologia e Cont. da Qualidade",
+    "chCr": "15-1",
+    "turma": "T07",
+    "professor": "Nila Cecília F. L. Medeiros",
+    "pavilhao": "Laboratório",
+    "sala": "LAMET",
+    "horariosTexto": "Ter 10:00-10:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "10:00",
+        "fim": "10:50",
+        "inicioMin": 600,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_55",
+    "semestre": "5º Semestre - 2027.1",
+    "codigo": "CET 952",
+    "codigoNorm": "CET952",
+    "disciplina": "Metrologia e Cont. da Qualidade",
+    "chCr": "30-1",
+    "turma": "P07",
+    "professor": "Nila Cecília F. L. Medeiros",
+    "pavilhao": "Laboratório",
+    "sala": "LAMET",
+    "horariosTexto": "Ter 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "5º Sem"
+  },
+  {
+    "id": "ofer_56",
+    "semestre": "6º Semestre - EXTRA - 2027.1",
+    "codigo": "CET 855",
+    "codigoNorm": "CET855",
+    "disciplina": "Automação e Controle (Extra)",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Manuedson Pires",
+    "pavilhao": "2º Andar Jorge Amado",
+    "sala": "3204",
+    "horariosTexto": "Qua 07:30-10:50",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "07:30",
+        "fim": "10:50",
+        "inicioMin": 450,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "6º Sem (Extra)"
+  },
+  {
+    "id": "ofer_57",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CEC 025",
+    "codigoNorm": "CEC025",
+    "disciplina": "Economia Aplicada à Engenharia",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Mônick Midlej do Espírito Santo",
+    "pavilhao": "J. Modelo - Térreo",
+    "sala": "224",
+    "horariosTexto": "Qua 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_58",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 843",
+    "codigoNorm": "CET843",
+    "disciplina": "Pesquisa Operacional I",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(Seg) 1205 / (Ter) 1208",
+    "horariosTexto": "Seg 07:30-09:10; Ter 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      },
+      {
+        "dia": "Terça",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_59",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 961",
+    "codigoNorm": "CET961",
+    "disciplina": "Engenharia Assist. Computador",
+    "chCr": "15-1",
+    "turma": "T07",
+    "professor": "Érica Cristina Almeida",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab. 7B",
+    "horariosTexto": "Sex 07:30-08:20",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "07:30",
+        "fim": "08:20",
+        "inicioMin": 450,
+        "fimMin": 500
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_60",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 961",
+    "codigoNorm": "CET961",
+    "disciplina": "Engenharia Assist. Computador",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Érickson Fabiano Moura",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab. 7B",
+    "horariosTexto": "Sex 08:20-10:00",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "08:20",
+        "fim": "10:00",
+        "inicioMin": 500,
+        "fimMin": 600
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_61",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET961",
+    "codigoNorm": "CET961",
+    "disciplina": "Engenharia Assist. Computador",
+    "chCr": "15-1",
+    "turma": "T09",
+    "professor": "Renato Reis Monteiro",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab. 7B",
+    "horariosTexto": "Sex 10:00-10:50",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "10:00",
+        "fim": "10:50",
+        "inicioMin": 600,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_62",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 961",
+    "codigoNorm": "CET961",
+    "disciplina": "Engenharia Assist. Computador",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Vinícius de O. M. Siqueira",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab. 7B",
+    "horariosTexto": "Sex 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_63",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 962",
+    "codigoNorm": "CET962",
+    "disciplina": "Fund. Soldagem e Trat. Térmicos",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Vaneide Gomes",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Ter) 3106",
+    "horariosTexto": "Ter 09:10-10:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "09:10",
+        "fim": "10:50",
+        "inicioMin": 550,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_64",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 962",
+    "codigoNorm": "CET962",
+    "disciplina": "Fund. Soldagem e Trat. Térmicos",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Vaneide Gomes",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Ter) 3106",
+    "horariosTexto": "Ter 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_65",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 962",
+    "codigoNorm": "CET962",
+    "disciplina": "Fund. Soldagem e Trat. Térmicos",
+    "chCr": "15-1",
+    "turma": "T09",
+    "professor": "Vaneide Gomes",
+    "pavilhao": "2º andar Juizado Modelo",
+    "sala": "(Qua) 208",
+    "horariosTexto": "Qua 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_66",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 962",
+    "codigoNorm": "CET962",
+    "disciplina": "Fund. Soldagem e Trat. Térmicos",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Vaneide Gomes",
+    "pavilhao": "2º andar Juizado Modelo",
+    "sala": "(Qua) 208",
+    "horariosTexto": "Qua 15:10-16:50",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "15:10",
+        "fim": "16:50",
+        "inicioMin": 910,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_67",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 963",
+    "codigoNorm": "CET963",
+    "disciplina": "Manufatura Assist. Computador",
+    "chCr": "30-1",
+    "turma": "T07",
+    "professor": "Victor Hugo Martins",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab 7B",
+    "horariosTexto": "Seg 13:30-14:20",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "13:30",
+        "fim": "14:20",
+        "inicioMin": 810,
+        "fimMin": 860
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_68",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 963",
+    "codigoNorm": "CET963",
+    "disciplina": "Manufatura Assist. Computador",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Victor Hugo Martins",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab 7B",
+    "horariosTexto": "Seg 14:20-16:00",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "14:20",
+        "fim": "16:00",
+        "inicioMin": 860,
+        "fimMin": 960
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_69",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET963",
+    "codigoNorm": "CET963",
+    "disciplina": "Manufatura Assist. Computador",
+    "chCr": "15-1",
+    "turma": "T09",
+    "professor": "Victor Hugo Martins",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab 7B",
+    "horariosTexto": "Qui 07:30-08:20",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "07:30",
+        "fim": "08:20",
+        "inicioMin": 450,
+        "fimMin": 500
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_70",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 963",
+    "codigoNorm": "CET963",
+    "disciplina": "Manufatura Assist. Computador",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Victor Hugo Martins",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "Lab 7B",
+    "horariosTexto": "Qui 08:20-10:00",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "08:20",
+        "fim": "10:00",
+        "inicioMin": 500,
+        "fimMin": 600
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_71",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 964",
+    "codigoNorm": "CET964",
+    "disciplina": "Máquinas Térmicas",
+    "chCr": "45-3",
+    "turma": "T07",
+    "professor": "Renato Reis Monteiro",
+    "pavilhao": "1º andar Exatas",
+    "sala": "(Ter) 9130",
+    "horariosTexto": "Ter 13:30-16:00",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "13:30",
+        "fim": "16:00",
+        "inicioMin": 810,
+        "fimMin": 960
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_72",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 964",
+    "codigoNorm": "CET964",
+    "disciplina": "Máquinas Térmicas",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Renato Reis Monteiro",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Qua) 3102",
+    "horariosTexto": "Qua 10:50-11:40",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "10:50",
+        "fim": "11:40",
+        "inicioMin": 650,
+        "fimMin": 700
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_73",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 964",
+    "codigoNorm": "CET964",
+    "disciplina": "Máquinas Térmicas",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Renato Reis Monteiro",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Qua) 3102",
+    "horariosTexto": "Qua 11:40-12:30",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "11:40",
+        "fim": "12:30",
+        "inicioMin": 700,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_74",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 965",
+    "codigoNorm": "CET965",
+    "disciplina": "Processo de Usinagem II",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Leonardo Iusuti",
+    "pavilhao": "1º andar - Exatas",
+    "sala": "(Seg) 9130",
+    "horariosTexto": "Grade não exibe T07; P01 Seg 09:10-12:30",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "09:10",
+        "fim": "12:30",
+        "inicioMin": 550,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_75",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 965",
+    "codigoNorm": "CET965",
+    "disciplina": "Processo de Usinagem II",
+    "chCr": "60-4",
+    "turma": "P01",
+    "professor": "Leonardo Iusuti",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Qua) 3104",
+    "horariosTexto": "Seg 09:10-12:30",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "09:10",
+        "fim": "12:30",
+        "inicioMin": 550,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_76",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 965",
+    "codigoNorm": "CET965",
+    "disciplina": "Processo de Usinagem II",
+    "chCr": "60-4",
+    "turma": "P02",
+    "professor": "Leonardo Iusuti",
+    "pavilhao": "1º andar Pedro Calmon",
+    "sala": "(Qui) 1104",
+    "horariosTexto": "Qui 08:20-10:50",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "08:20",
+        "fim": "10:50",
+        "inicioMin": 500,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_77",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 965",
+    "codigoNorm": "CET965",
+    "disciplina": "Processo de Usinagem II",
+    "chCr": "60-4",
+    "turma": "P03",
+    "professor": "Leonardo Iusuti",
+    "pavilhao": "2º andar Juizado Modelo",
+    "sala": "(Qui) 218",
+    "horariosTexto": "Qui 13:30-16:00",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "13:30",
+        "fim": "16:00",
+        "inicioMin": 810,
+        "fimMin": 960
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_78",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 966",
+    "codigoNorm": "CET966",
+    "disciplina": "Projeto Mecânico",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Érickson Fabiano Moura",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Qui) 3104",
+    "horariosTexto": "Qui 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_79",
+    "semestre": "7º Semestre - 2027.1",
+    "codigo": "CET 966",
+    "codigoNorm": "CET966",
+    "disciplina": "Projeto Mecânico",
+    "chCr": "60-4",
+    "turma": "P01",
+    "professor": "Érickson Fabiano Moura",
+    "pavilhao": "1º andar Pedro Calmon",
+    "sala": "(Sex) 1103",
+    "horariosTexto": "Sex 13:30-16:50",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "13:30",
+        "fim": "16:50",
+        "inicioMin": 810,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "7º Sem"
+  },
+  {
+    "id": "ofer_80",
+    "semestre": "Optativas - 8º Semestre - 2027.1 - Extra",
+    "codigo": "CET1046",
+    "codigoNorm": "CET1046",
+    "disciplina": "Mecânica de Precisão- Op. I",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "1º P. Calmon/ 2º P. Calmon",
+    "sala": "(Seg) 1106 / (Qua) 1205",
+    "horariosTexto": "Qui 07:30-10:50",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "07:30",
+        "fim": "10:50",
+        "inicioMin": 450,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "8º Sem / Optativas"
+  },
+  {
+    "id": "ofer_81",
+    "semestre": "Optativas - 8º Semestre - 2027.1 - Extra",
+    "codigo": "CET851",
+    "codigoNorm": "CET851",
+    "disciplina": "Gestão da Qualidade - Op. II",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "1º andar Jorge Amado",
+    "sala": "(Seg) e (Qua) 3102",
+    "horariosTexto": "Seg 13:30-15:10; Qua 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "8º Sem / Optativas"
+  },
+  {
+    "id": "ofer_82",
+    "semestre": "Optativas - 8º Semestre - 2027.1 - Extra",
+    "codigo": "CET 972",
+    "codigoNorm": "CET972",
+    "disciplina": "Sistemas Térmicos de Potência (Extra)",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "Juizado Modelo- térreo",
+    "sala": "(manhã) 223",
+    "horariosTexto": "Seg 07:30-09:10; Qua 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "8º Sem / Optativas"
+  },
+  {
+    "id": "ofer_83",
+    "semestre": "Optativas - 8º Semestre - 2027.1 - Extra",
+    "codigo": "CET 967",
+    "codigoNorm": "CET967",
+    "disciplina": "Máquinas Hidráulicas e Pneumática (Extra)",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Kevin Sacramento",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(tarde) 1210",
+    "horariosTexto": "Ter 07:30-10:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "07:30",
+        "fim": "10:50",
+        "inicioMin": 450,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "8º Sem / Optativas"
+  },
+  {
+    "id": "ofer_84",
+    "semestre": "Optativas - 8º Semestre - 2027.1 - Extra",
+    "codigo": "CET 967",
+    "codigoNorm": "CET967",
+    "disciplina": "Máquinas Hidráulicas e Pneumática (Extra)",
+    "chCr": "30-1",
+    "turma": "P01",
+    "professor": "Kevin Sacramento",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(tarde) 1210",
+    "horariosTexto": "Ter 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "8º Sem / Optativas"
+  },
+  {
+    "id": "ofer_85",
+    "semestre": "Optativas - 8º Semestre - 2027.1 - Extra",
+    "codigo": "CET 967",
+    "codigoNorm": "CET967",
+    "disciplina": "Máquinas Hidráulicas e Pneumática (Extra)",
+    "chCr": "30-1",
+    "turma": "P02",
+    "professor": "Kevin Sacramento",
+    "pavilhao": "2º andar Pedro Calmon",
+    "sala": "(tarde) 1210",
+    "horariosTexto": "Ter 15:10-16:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "15:10",
+        "fim": "16:50",
+        "inicioMin": 910,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "8º Sem / Optativas"
+  },
+  {
+    "id": "ofer_86",
+    "semestre": "Optativas - 8º Semestre - 2027.1 - Extra",
+    "codigo": "CET 971",
+    "codigoNorm": "CET971",
+    "disciplina": "Sistemas Frigoríficos (Extra)",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Kevin Sacramento",
+    "pavilhao": "2º Exatas / 2º J. Amado",
+    "sala": "(Seg) 9246/ (Qua) 3206",
+    "horariosTexto": "Seg 10:50-12:30; Qua 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "8º Sem / Optativas"
+  },
+  {
+    "id": "ofer_87",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "CAC 097",
+    "codigoNorm": "CAC097",
+    "disciplina": "Administração Geral",
+    "chCr": "45-3",
+    "turma": "T07",
+    "professor": "Clemildes Gonzaga",
+    "pavilhao": "J. Modelo - Térreo",
+    "sala": "221",
+    "horariosTexto": "Ter 07:30-10:00",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "07:30",
+        "fim": "10:00",
+        "inicioMin": 450,
+        "fimMin": 600
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_88",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "CET 973",
+    "codigoNorm": "CET973",
+    "disciplina": "Sist. de Elev. Transporte",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "Daniel Nicolau Lima",
+    "pavilhao": "1º andar Exatas",
+    "sala": "(Qua) 9130",
+    "horariosTexto": "Qua 10:50-12:30",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "10:50",
+        "fim": "12:30",
+        "inicioMin": 650,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_89",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "CET 973",
+    "codigoNorm": "CET973",
+    "disciplina": "Sist. de Elev. Transporte",
+    "chCr": "60-2",
+    "turma": "P01",
+    "professor": "Daniel Nicolau Lima",
+    "pavilhao": "2º andar Exatas",
+    "sala": "9249",
+    "horariosTexto": "Ter 13:30-16:50",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "13:30",
+        "fim": "16:50",
+        "inicioMin": 810,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_90",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "CET 974",
+    "codigoNorm": "CET974",
+    "disciplina": "Sist. de Produção e Gestão",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "1º andar Pedro Calmon",
+    "sala": "1105",
+    "horariosTexto": "Qui 13:30-16:50",
+    "slots": [
+      {
+        "dia": "Quinta",
+        "inicio": "13:30",
+        "fim": "16:50",
+        "inicioMin": 810,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_91",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "CET 975",
+    "codigoNorm": "CET975",
+    "disciplina": "TCC I",
+    "chCr": "45-3",
+    "turma": "T07",
+    "professor": "Nila Cecília de Faria Lopes",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Sex 10:00-12:30",
+    "slots": [
+      {
+        "dia": "Sexta",
+        "inicio": "10:00",
+        "fim": "12:30",
+        "inicioMin": 600,
+        "fimMin": 750
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_92",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "FCH 690",
+    "codigoNorm": "FCH690",
+    "disciplina": "Respons. Social e Ética",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "Juizado Modelo - térreo",
+    "sala": "224",
+    "horariosTexto": "Qua 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Quarta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_93",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "FCH 691",
+    "codigoNorm": "FCH691",
+    "disciplina": "Psicologia das Organizações",
+    "chCr": "30-2",
+    "turma": "T07",
+    "professor": "SEM INDICAÇÃO",
+    "pavilhao": "2º andar J. Modelo",
+    "sala": "216",
+    "horariosTexto": "Ter 10:00-11:40",
+    "slots": [
+      {
+        "dia": "Terça",
+        "inicio": "10:00",
+        "fim": "11:40",
+        "inicioMin": 600,
+        "fimMin": 700
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_94",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "CET 050",
+    "codigoNorm": "CET050",
+    "disciplina": "Materiais Metálico - Op. III",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Vaneide Gomes",
+    "pavilhao": "1º andar Exatas",
+    "sala": "(Seg) e (Qui) 9130",
+    "horariosTexto": "Seg 13:30-15:10; Qui 07:30-09:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      },
+      {
+        "dia": "Quinta",
+        "inicio": "07:30",
+        "fim": "09:10",
+        "inicioMin": 450,
+        "fimMin": 550
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_95",
+    "semestre": "9º Semestre - 2027.1",
+    "codigo": "CET 051",
+    "codigoNorm": "CET051",
+    "disciplina": "Materiais Cerâmico - Op. IV",
+    "chCr": "60-4",
+    "turma": "T07",
+    "professor": "Renato Reis",
+    "pavilhao": "2º andar J. Modelo",
+    "sala": "(Seg) 215 / (Qua) 207",
+    "horariosTexto": "Seg 13:30-15:10; Qua 13:30-15:10",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      },
+      {
+        "dia": "Quarta",
+        "inicio": "13:30",
+        "fim": "15:10",
+        "inicioMin": 810,
+        "fimMin": 910
+      }
+    ],
+    "semestreCurto": "9º Sem"
+  },
+  {
+    "id": "ofer_96",
+    "semestre": "10º Semestre - 2027.1 - Extra",
+    "codigo": "CET 977",
+    "codigoNorm": "CET977",
+    "disciplina": "TCC II -",
+    "chCr": "45-3",
+    "turma": "T07",
+    "professor": "Érica Cristina Almeida",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Seg 14:20-16:50",
+    "slots": [
+      {
+        "dia": "Segunda",
+        "inicio": "14:20",
+        "fim": "16:50",
+        "inicioMin": 860,
+        "fimMin": 1010
+      }
+    ],
+    "semestreCurto": "10º Sem (Extra)"
+  },
+  {
+    "id": "ofer_97",
+    "semestre": "10º Semestre - 2027.1 - Extra",
+    "codigo": "CET 1018",
+    "codigoNorm": "CET1018",
+    "disciplina": "Estágio Obrigatório",
+    "chCr": "180-4",
+    "turma": "T07",
+    "professor": "José Carlos de Camargo",
+    "pavilhao": "1º andar Exatas",
+    "sala": "9130",
+    "horariosTexto": "Sáb 07:30-10:50",
+    "slots": [
+      {
+        "dia": "Sábado",
+        "inicio": "07:30",
+        "fim": "10:50",
+        "inicioMin": 450,
+        "fimMin": 650
+      }
+    ],
+    "semestreCurto": "10º Sem (Extra)"
+  }
+];
+
+        // Blocos oficiais de horário da UESC (50 min)
+        const BLOCOS_HORARIO = [
+            { label: "07:30 - 08:20", inicio: 450, fim: 500, turno: "Manhã" },
+            { label: "08:20 - 09:10", inicio: 500, fim: 550, turno: "Manhã" },
+            { label: "09:10 - 10:00", inicio: 550, fim: 600, turno: "Manhã" },
+            { label: "10:00 - 10:50", inicio: 600, fim: 650, turno: "Manhã" },
+            { label: "10:50 - 11:40", inicio: 650, fim: 700, turno: "Manhã" },
+            { label: "11:40 - 12:30", inicio: 700, fim: 750, turno: "Manhã" },
+            { label: "13:30 - 14:20", inicio: 810, fim: 860, turno: "Tarde" },
+            { label: "14:20 - 15:10", inicio: 860, fim: 910, turno: "Tarde" },
+            { label: "15:10 - 16:00", inicio: 910, fim: 960, turno: "Tarde" },
+            { label: "16:00 - 16:50", inicio: 960, fim: 1010, turno: "Tarde" },
+            { label: "16:50 - 17:40", inicio: 1010, fim: 1060, turno: "Tarde" },
+            { label: "17:40 - 18:30", inicio: 1060, fim: 1110, turno: "Tarde" }
+        ];
+
         const TOTAL_CREDITOS = 256;
+        const TOTAL_CH = 4440;
+
+        // Estado persistido
         let concluidas = new Set(JSON.parse(localStorage.getItem('uesc_concluidas')) || []);
         let forcadas = new Set(JSON.parse(localStorage.getItem('uesc_forcadas')) || []);
+        let cursando = new Set(JSON.parse(localStorage.getItem('uesc_cursando')) || []);
+        let turmasSelecionadas = new Set(JSON.parse(localStorage.getItem('uesc_turmas_2027_1')) || []);
+
+        let modoClique = 'concluida'; // 'concluida' ou 'cursando'
+        const semestresOfertaUnicos = [...new Set(ofertas2027_1.map(o => o.semestre))];
+        let semestreEstaticoAtual = semestresOfertaUnicos[0] || '';
 
         function salvarProgresso() {
             localStorage.setItem('uesc_concluidas', JSON.stringify([...concluidas]));
             localStorage.setItem('uesc_forcadas', JSON.stringify([...forcadas]));
+            localStorage.setItem('uesc_cursando', JSON.stringify([...cursando]));
+            localStorage.setItem('uesc_turmas_2027_1', JSON.stringify([...turmasSelecionadas]));
+        }
+
+        // ============================================================
+        // 3. NAVEGAÇÃO, BACKUP & RESET
+        // ============================================================
+        function trocarAba(aba) {
+            const mapa = {
+                'fluxograma': ['aba-fluxograma', 'btn-aba-fluxograma'],
+                'horarios-estatico': ['aba-horarios-estatico', 'btn-aba-horarios-estatico'],
+                'simulador': ['aba-simulador', 'btn-aba-simulador'],
+                'planejamento': ['aba-planejamento', 'btn-aba-planejamento']
+            };
+            Object.keys(mapa).forEach(k => {
+                document.getElementById(mapa[k][0]).classList.remove('ativa');
+                document.getElementById(mapa[k][1]).classList.remove('active');
+            });
+            document.getElementById(mapa[aba][0]).classList.add('ativa');
+            document.getElementById(mapa[aba][1]).classList.add('active');
+
+            if (aba === 'horarios-estatico') renderizarHorariosEstaticos();
+            if (aba === 'simulador') renderizarSimulador();
+            if (aba === 'planejamento') renderizarPlanejamento();
+        }
+
+        function exportarProgresso() {
+            const payload = JSON.stringify({
+                concluidas: [...concluidas],
+                forcadas: [...forcadas],
+                cursando: [...cursando],
+                turmas2027_1: [...turmasSelecionadas]
+            });
+            navigator.clipboard?.writeText(payload).catch(() => {});
+            prompt("Copie o código abaixo para guardar ou transferir seu progresso:", payload);
+        }
+
+        function importarProgresso() {
+            const raw = prompt("Cole aqui o código de progresso exportado anteriormente:");
+            if (!raw) return;
+            try {
+                const parsed = JSON.parse(raw);
+                concluidas = new Set(parsed.concluidas || []);
+                forcadas = new Set(parsed.forcadas || []);
+                cursando = new Set(parsed.cursando || []);
+                turmasSelecionadas = new Set(parsed.turmas2027_1 || []);
+                atualizarFluxograma();
+                renderizarHorariosEstaticos();
+                renderizarSimulador();
+                renderizarPlanejamento();
+                alert("Progresso importado com sucesso!");
+            } catch (e) {
+                alert("Código inválido. Verifique se copiou o texto completo.");
+            }
+        }
+
+        function resetarProgresso() {
+            if (confirm("Tem certeza que deseja resetar todo o fluxograma, cursando e grade simulada?")) {
+                concluidas.clear();
+                forcadas.clear();
+                cursando.clear();
+                turmasSelecionadas.clear();
+                atualizarFluxograma();
+                renderizarHorariosEstaticos();
+                renderizarSimulador();
+                renderizarPlanejamento();
+            }
+        }
+
+        // ============================================================
+        // 4. LÓGICA DO FLUXOGRAMA
+        // ============================================================
+        function setModoClique(modo) {
+            modoClique = modo;
+            const bConc = document.getElementById('btn-modo-concluida');
+            const bCurs = document.getElementById('btn-modo-cursando');
+            bConc.className = 'modo-btn' + (modo === 'concluida' ? ' active-concluida' : '');
+            bCurs.className = 'modo-btn' + (modo === 'cursando' ? ' active-cursando' : '');
+        }
+
+        function getStatusMateria(materia) {
+            if (!materia) return 'bloqueada';
+            if (concluidas.has(materia.id)) return 'concluida';
+            if (cursando.has(materia.id)) return 'cursando';
+            const reqConcluidos = materia.preReq.filter(req => concluidas.has(req)).length;
+            const reqTotal = materia.preReq.length;
+            if (reqTotal === 0 || reqConcluidos === reqTotal) return 'liberada';
+            if (reqConcluidos > 0 && reqConcluidos < reqTotal) return 'parcial';
+            return 'bloqueada';
+        }
+
+        function encontrarMateriaPorCodigoNorm(codNorm) {
+            const aliasMap = {
+                'CET1164': 'CET164',
+                'CET843': 'CET593'
+            };
+            const resolvido = aliasMap[codNorm] || codNorm;
+            return materias.find(m => m.codigo.replace(/\s+/g, '').toUpperCase() === resolvido);
         }
 
         function atualizarFluxograma() {
             let creditosSomados = 0;
+            let horasSomadas = 0;
+            let creditosCursando = 0;
+            let horasCursando = 0;
 
             materias.forEach(m => {
                 const elemento = document.getElementById(m.id);
                 if (!elemento) return;
 
-                const reqConcluidos = m.preReq.filter(req => concluidas.has(req)).length;
-                const reqTotal = m.preReq.length;
+                const status = getStatusMateria(m);
+                elemento.classList.remove('bloqueada', 'liberada', 'concluida', 'parcial', 'cursando');
+                elemento.classList.add(status);
 
-                elemento.classList.remove('bloqueada', 'liberada', 'concluida', 'parcial');
-
-                if (concluidas.has(m.id)) {
-                    elemento.classList.add('concluida'); 
+                const chMat = m.ch || (m.creditos * 15);
+                if (status === 'concluida') {
                     creditosSomados += m.creditos;
-                } else if (reqTotal === 0 || reqConcluidos === reqTotal) {
-                    elemento.classList.add('liberada');  
-                } else if (reqConcluidos > 0 && reqConcluidos < reqTotal) {
-                    elemento.classList.add('parcial');   
-                } else {
-                    elemento.classList.add('bloqueada'); 
+                    horasSomadas += chMat;
+                } else if (status === 'cursando') {
+                    creditosCursando += m.creditos;
+                    horasCursando += chMat;
                 }
             });
 
-            const porcentagem = ((creditosSomados / TOTAL_CREDITOS) * 100).toFixed(1);
+            const pctConc = ((creditosSomados / TOTAL_CREDITOS) * 100).toFixed(1);
+            const pctCurs = ((creditosCursando / TOTAL_CREDITOS) * 100).toFixed(1);
+
             document.getElementById('creditos-atuais').innerText = creditosSomados;
-            document.getElementById('porcentagem').innerText = porcentagem;
-            document.getElementById('barra-progresso').style.width = porcentagem + '%';
+            document.getElementById('porcentagem').innerText = pctConc;
+            document.getElementById('horas-atuais').innerText = horasSomadas.toLocaleString('pt-BR');
+            document.getElementById('barra-progresso').style.width = pctConc + '%';
+            document.getElementById('barra-cursando').style.width = pctCurs + '%';
+
+            const infoCurs = document.getElementById('info-cursando');
+            if (creditosCursando > 0) {
+                infoCurs.innerText = ` | Cursando: ${creditosCursando} Cr. (${horasCursando}h)`;
+            } else {
+                infoCurs.innerText = '';
+            }
             
             salvarProgresso();
+        }
+
+        function filtrarFluxograma() {
+            const termo = (document.getElementById('busca-fluxograma')?.value || '').trim().toLowerCase();
+            materias.forEach(m => {
+                const el = document.getElementById(m.id);
+                if (!el) return;
+                if (!termo) {
+                    el.classList.remove('busca-dim', 'busca-match');
+                    return;
+                }
+                const texto = `${m.codigo} ${m.nome}`.toLowerCase();
+                if (texto.includes(termo)) {
+                    el.classList.remove('busca-dim');
+                    el.classList.add('busca-match');
+                } else {
+                    el.classList.add('busca-dim');
+                    el.classList.remove('busca-match');
+                }
+            });
         }
 
         let lastTap = 0;
@@ -427,6 +3573,19 @@
         }
 
         function alternarNormal(id) {
+            if (modoClique === 'cursando') {
+                if (cursando.has(id)) {
+                    cursando.delete(id);
+                } else {
+                    concluidas.delete(id);
+                    forcadas.delete(id);
+                    verificarCascataRemocao();
+                    cursando.add(id);
+                }
+                atualizarFluxograma();
+                return;
+            }
+
             if (concluidas.has(id)) {
                 concluidas.delete(id);
                 forcadas.delete(id);
@@ -435,6 +3594,7 @@
                 const materia = materias.find(m => m.id === id);
                 const reqConcluidos = materia.preReq.filter(req => concluidas.has(req)).length;
                 if (reqConcluidos === materia.preReq.length) {
+                    cursando.delete(id);
                     concluidas.add(id);
                 }
             }
@@ -443,6 +3603,7 @@
 
         function alternarForcado(id) {
             if (!concluidas.has(id)) {
+                cursando.delete(id);
                 concluidas.add(id);
                 forcadas.add(id); 
                 atualizarFluxograma();
@@ -480,6 +3641,7 @@
                     if (!concluidas.has(m.id)) {
                         const reqConcluidos = m.preReq.filter(req => concluidas.has(req)).length;
                         if (reqConcluidos === m.preReq.length) {
+                            cursando.delete(m.id);
                             concluidas.add(m.id);
                         }
                     }
@@ -512,12 +3674,26 @@
             const listaLibera = document.getElementById('modal-libera');
             listaLibera.innerHTML = '';
             const dependentes = materias.filter(m => m.preReq.includes(id));
-            
             if (dependentes.length === 0) {
                 listaLibera.innerHTML = '<li>Nenhuma</li>';
             } else {
                 dependentes.forEach(dep => {
                     listaLibera.innerHTML += `<li><strong>${dep.codigo}</strong> - ${dep.nome}</li>`;
+                });
+            }
+
+            const listaOferta = document.getElementById('modal-oferta-2027');
+            listaOferta.innerHTML = '';
+            const codNormMat = materia.codigo.replace(/\s+/g, '').toUpperCase();
+            const ofertasRel = ofertas2027_1.filter(o => {
+                const mFound = encontrarMateriaPorCodigoNorm(o.codigoNorm);
+                return mFound && mFound.id === materia.id;
+            });
+            if (ofertasRel.length === 0) {
+                listaOferta.innerHTML = '<li>Não ofertada na grade 2027.1</li>';
+            } else {
+                ofertasRel.forEach(o => {
+                    listaOferta.innerHTML += `<li><strong>${o.turma}</strong> (${o.professor}): ${o.horariosTexto}</li>`;
                 });
             }
 
@@ -530,6 +3706,7 @@
 
         function renderizarInterface() {
             const container = document.getElementById('fluxograma');
+            container.innerHTML = '';
             
             for (let i = 1; i <= 10; i++) {
                 const materiasDoSemestre = materias
@@ -571,7 +3748,344 @@
             atualizarFluxograma();
         }
 
+        // ============================================================
+        // 5. ABA 2: HORÁRIOS 2027.1 (ESTÁTICO COM SUB-ABAS POR SEMESTRE)
+        // ============================================================
+        function renderizarSubabasHorarios() {
+            const box = document.getElementById('subtabs-semestres');
+            box.innerHTML = '';
+            semestresOfertaUnicos.forEach(sem => {
+                const sample = ofertas2027_1.find(o => o.semestre === sem);
+                const btn = document.createElement('button');
+                btn.className = 'subtab-btn' + (sem === semestreEstaticoAtual ? ' active' : '');
+                btn.innerText = sample ? sample.semestreCurto : sem;
+                btn.onclick = () => {
+                    semestreEstaticoAtual = sem;
+                    renderizarHorariosEstaticos();
+                };
+                box.appendChild(btn);
+            });
+        }
+
+        function renderizarGradePorBlocos(tbodyEl, listaOfertas, dias, conflitosIds = new Set(), mostrarVazios = false) {
+            tbodyEl.innerHTML = '';
+            let ultimoTurno = '';
+
+            BLOCOS_HORARIO.forEach(bloco => {
+                // Verifica se há alguma aula neste bloco (se não for mostrar vazios)
+                const aulasPorDia = dias.map(dia => {
+                    const achadas = [];
+                    listaOfertas.forEach(o => {
+                        o.slots.forEach(s => {
+                            if (s.dia === dia && s.inicioMin < bloco.fim && bloco.inicio < s.fimMin) {
+                                achadas.push({ oferta: o, slot: s });
+                            }
+                        });
+                    });
+                    return achadas;
+                });
+
+                const temAlguma = aulasPorDia.some(arr => arr.length > 0);
+                if (!mostrarVazios && !temAlguma) return;
+
+                if (bloco.turno !== ultimoTurno) {
+                    const trDiv = document.createElement('tr');
+                    trDiv.className = 'divisor-turno';
+                    trDiv.innerHTML = `<td colspan="${dias.length + 1}">${bloco.turno}</td>`;
+                    tbodyEl.appendChild(trDiv);
+                    ultimoTurno = bloco.turno;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td class="col-hora">${bloco.label}</td>`;
+
+                aulasPorDia.forEach(achadas => {
+                    const td = document.createElement('td');
+                    if (achadas.length === 0) {
+                        td.innerHTML = `<span style="color:#d0d4d9;">—</span>`;
+                    } else {
+                        achadas.forEach(item => {
+                            const o = item.oferta;
+                            const isPratica = String(o.turma || '').toUpperCase().startsWith('P');
+                            const isConf = conflitosIds.has(o.id);
+                            const cls = isConf ? 'conflito' : (isPratica ? 'pratica' : '');
+                            td.innerHTML += `
+                                <div class="bloco-aula ${cls}">
+                                    <div><strong>${o.codigo}</strong> (${o.turma})</div>
+                                    <div>${o.disciplina}</div>
+                                    <div style="color:#555;">${o.sala || o.pavilhao || ''}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                    tr.appendChild(td);
+                });
+
+                tbodyEl.appendChild(tr);
+            });
+
+            if (tbodyEl.innerHTML === '') {
+                tbodyEl.innerHTML = `<tr><td colspan="${dias.length + 1}" style="padding:16px; color:#888;">Nenhuma aula selecionada ou cadastrada para esta grade.</td></tr>`;
+            }
+        }
+
+        function renderizarHorariosEstaticos() {
+            renderizarSubabasHorarios();
+            const turmas = ofertas2027_1.filter(o => o.semestre === semestreEstaticoAtual);
+            const temSabado = turmas.some(o => o.slots.some(s => s.dia === 'Sábado'));
+            const dias = temSabado
+                ? ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+                : ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+
+            document.getElementById('titulo-grade-estatica').firstElementChild.innerText =
+                `Grade Semanal — ${semestreEstaticoAtual}`;
+
+            const thead = document.getElementById('thead-grade-estatica');
+            thead.innerHTML = `<tr><th>Horário</th>${dias.map(d => `<th>${d}</th>`).join('')}</tr>`;
+
+            renderizarGradePorBlocos(document.getElementById('tbody-grade-estatica'), turmas, dias, new Set(), false);
+
+            // Tabela detalhada abaixo
+            const tbodyRes = document.getElementById('tbody-resumo-estatico');
+            tbodyRes.innerHTML = '';
+            const labelsStatus = {
+                concluida: 'Concluída',
+                cursando: 'Cursando',
+                liberada: 'Liberada',
+                parcial: 'Parcial',
+                bloqueada: 'Bloqueada'
+            };
+
+            turmas.forEach(o => {
+                const matFlux = encontrarMateriaPorCodigoNorm(o.codigoNorm);
+                const statusFlux = matFlux ? getStatusMateria(matFlux) : 'liberada';
+                const labelSt = matFlux ? labelsStatus[statusFlux] : 'Optativa / Extra';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${o.codigo}</strong></td>
+                    <td>${o.disciplina}</td>
+                    <td>${o.turma}</td>
+                    <td>${o.chCr}</td>
+                    <td>${o.professor}</td>
+                    <td>${[o.pavilhao, o.sala].filter(Boolean).join(' — ') || 'A definir'}</td>
+                    <td style="color:#0b5ed7; font-weight:bold;">${o.horariosTexto}</td>
+                    <td><span class="badge-status badge-${statusFlux}">${labelSt}</span></td>
+                `;
+                tbodyRes.appendChild(tr);
+            });
+        }
+
+        // ============================================================
+        // 6. ABA 3: SIMULADOR DE MATRÍCULA (INTERATIVO)
+        // ============================================================
+        function popularFiltroSemestresOferta() {
+            const select = document.getElementById('filtro-semestre-oferta');
+            semestresOfertaUnicos.forEach(sem => {
+                const opt = document.createElement('option');
+                opt.value = sem;
+                opt.innerText = sem;
+                select.appendChild(opt);
+            });
+        }
+
+        function alternarTurmaSimulador(ofertaId) {
+            if (turmasSelecionadas.has(ofertaId)) {
+                turmasSelecionadas.delete(ofertaId);
+            } else {
+                turmasSelecionadas.add(ofertaId);
+            }
+            salvarProgresso();
+            renderizarSimulador();
+        }
+
+        function limparSelecaoHorarios() {
+            turmasSelecionadas.clear();
+            salvarProgresso();
+            renderizarSimulador();
+        }
+
+        function sincronizarCursando() {
+            const selecionadas = ofertas2027_1.filter(o => turmasSelecionadas.has(o.id));
+            if (selecionadas.length === 0) {
+                alert("Selecione ao menos uma turma no simulador primeiro.");
+                return;
+            }
+            let count = 0;
+            selecionadas.forEach(o => {
+                const mat = encontrarMateriaPorCodigoNorm(o.codigoNorm);
+                if (mat && !concluidas.has(mat.id)) {
+                    cursando.add(mat.id);
+                    count++;
+                }
+            });
+            atualizarFluxograma();
+            renderizarSimulador();
+            alert(`${count} disciplina(s) marcada(s) como "Cursando agora" no Fluxograma!`);
+        }
+
+        function calcularConflitos() {
+            const selecionadas = ofertas2027_1.filter(o => turmasSelecionadas.has(o.id));
+            const conflitosIds = new Set();
+            const mensagens = [];
+
+            for (let i = 0; i < selecionadas.length; i++) {
+                for (let j = i + 1; j < selecionadas.length; j++) {
+                    const a = selecionadas[i];
+                    const b = selecionadas[j];
+                    for (const sA of a.slots) {
+                        for (const sB of b.slots) {
+                            if (sA.dia === sB.dia && sA.inicioMin < sB.fimMin && sB.inicioMin < sA.fimMin) {
+                                conflitosIds.add(a.id);
+                                conflitosIds.add(b.id);
+                                mensagens.push(`${sA.dia}: ${a.codigo} (${a.turma}) [${sA.inicio}-${sA.fim}] x ${b.codigo} (${b.turma}) [${sB.inicio}-${sB.fim}]`);
+                            }
+                        }
+                    }
+                }
+            }
+            return { conflitosIds, mensagens: [...new Set(mensagens)] };
+        }
+
+        function renderizarSimulador() {
+            const busca = (document.getElementById('busca-oferta')?.value || '').trim().toLowerCase();
+            const semFiltro = document.getElementById('filtro-semestre-oferta')?.value || 'ALL';
+            const ocultarConcluidas = document.getElementById('chk-ocultar-concluidas')?.checked || false;
+            const apenasLiberadas = document.getElementById('chk-apenas-liberadas')?.checked || false;
+
+            const { conflitosIds, mensagens } = calcularConflitos();
+            const alerta = document.getElementById('alerta-choque');
+            if (mensagens.length > 0) {
+                alerta.style.display = 'block';
+                alerta.innerHTML = `⚠ Choque de horário (${mensagens.length}): ${mensagens.join(' | ')}`;
+            } else {
+                alerta.style.display = 'none';
+            }
+
+            const selecionadas = ofertas2027_1.filter(o => turmasSelecionadas.has(o.id));
+            let crSomados = 0;
+            let chSomada = 0;
+            selecionadas.forEach(o => {
+                const partes = String(o.chCr || '').split('-');
+                const ch = Number(partes[0]);
+                const cr = Number(partes[1]);
+                if (!Number.isNaN(ch)) chSomada += ch;
+                if (!Number.isNaN(cr)) crSomados += cr;
+            });
+            document.getElementById('resumo-selecao').innerText =
+                `Selecionadas: ${selecionadas.length} turma(s) | ${crSomados} Cr. (${chSomada}h)`;
+
+            const dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            renderizarGradePorBlocos(document.getElementById('corpo-grade-simulador'), selecionadas, dias, conflitosIds, false);
+
+            const container = document.getElementById('lista-ofertas');
+            container.innerHTML = '';
+
+            const labelsStatus = {
+                concluida: 'Concluída',
+                cursando: 'Cursando',
+                liberada: 'Liberada',
+                parcial: 'Parcial',
+                bloqueada: 'Bloqueada'
+            };
+
+            const filtradas = ofertas2027_1.filter(o => {
+                if (semFiltro !== 'ALL' && o.semestre !== semFiltro) return false;
+
+                const matFlux = encontrarMateriaPorCodigoNorm(o.codigoNorm);
+                const statusFlux = matFlux ? getStatusMateria(matFlux) : 'liberada';
+
+                if (ocultarConcluidas && statusFlux === 'concluida') return false;
+                if (apenasLiberadas && statusFlux !== 'liberada' && statusFlux !== 'parcial') return false;
+
+                if (busca) {
+                    const alvo = `${o.codigo} ${o.disciplina} ${o.professor} ${o.turma} ${o.semestre}`.toLowerCase();
+                    if (!alvo.includes(busca)) return false;
+                }
+                return true;
+            });
+
+            if (filtradas.length === 0) {
+                container.innerHTML = `<p style="color:#666;">Nenhuma turma encontrada com os filtros atuais.</p>`;
+                return;
+            }
+
+            filtradas.forEach(o => {
+                const matFlux = encontrarMateriaPorCodigoNorm(o.codigoNorm);
+                const statusFlux = matFlux ? getStatusMateria(matFlux) : 'liberada';
+                const labelSt = matFlux ? labelsStatus[statusFlux] : 'Optativa / Extra';
+                const isSel = turmasSelecionadas.has(o.id);
+                const isConf = conflitosIds.has(o.id);
+
+                const card = document.createElement('div');
+                card.className = `card-oferta ${isSel ? 'selecionada' : ''} ${isConf ? 'conflito' : ''}`;
+                card.onclick = () => alternarTurmaSimulador(o.id);
+
+                card.innerHTML = `
+                    <div class="oferta-topo">
+                        <span class="oferta-cod">${o.codigo} &bull; ${o.turma}</span>
+                        <span class="badge-status badge-${statusFlux}">${labelSt}</span>
+                    </div>
+                    <div class="oferta-nome">${o.disciplina}</div>
+                    <div class="oferta-meta"><strong>Prof.:</strong> ${o.professor} | <strong>CH-Cr:</strong> ${o.chCr}</div>
+                    <div class="oferta-meta"><strong>Local:</strong> ${[o.pavilhao, o.sala].filter(Boolean).join(' — ') || 'A definir'}</div>
+                    <div class="oferta-meta" style="color:#777;">${o.semestreCurto}</div>
+                    <div class="oferta-horario">${o.horariosTexto}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ============================================================
+        // 7. ABA 4: PLANEJAMENTO, FORMATURA, OPTATIVAS & ACC
+        // ============================================================
+        function renderizarPlanejamento() {
+            const contarCursando = document.getElementById('chk-contar-cursando')?.checked ?? true;
+            const mediaCr = Math.max(1, Number(document.getElementById('input-media-cr')?.value) || 26);
+
+            let crFeitos = 0;
+            let chFeitas = 0;
+            let matFeitas = 0;
+
+            materias.forEach(m => {
+                const feita = concluidas.has(m.id) || (contarCursando && cursando.has(m.id));
+                if (feita) {
+                    crFeitos += m.creditos;
+                    chFeitas += (m.ch || m.creditos * 15);
+                    matFeitas++;
+                }
+            });
+
+            const crFaltam = Math.max(0, TOTAL_CREDITOS - crFeitos);
+            const chFaltam = Math.max(0, TOTAL_CH - chFeitas);
+            const matFaltam = Math.max(0, materias.length - matFeitas);
+            const semRestantes = crFaltam === 0 ? 0 : Math.ceil(crFaltam / mediaCr);
+
+            document.getElementById('plan-cr-faltam').innerText = crFaltam;
+            document.getElementById('plan-ch-faltam').innerText = chFaltam.toLocaleString('pt-BR') + 'h';
+            document.getElementById('plan-mat-faltam').innerText = matFaltam;
+
+            if (semRestantes === 0) {
+                document.getElementById('plan-previsao').innerText = 'Formado!';
+                document.getElementById('plan-sem-restantes').innerText = '100% concluído';
+            } else {
+                // Base: próximo período 2027.1
+                let ano = 2027;
+                let per = 1;
+                for (let k = 1; k < semRestantes; k++) {
+                    if (per === 1) { per = 2; } else { per = 1; ano++; }
+                }
+                document.getElementById('plan-previsao').innerText = `${ano}.${per}`;
+                document.getElementById('plan-sem-restantes').innerText = `${semRestantes} semestre(s) restante(s)`;
+            }
+
+        }
+
+        // Inicialização
+        popularFiltroSemestresOferta();
         renderizarInterface();
+        renderizarHorariosEstaticos();
+        renderizarSimulador();
+        renderizarPlanejamento();
     </script>
 </body>
 </html>
