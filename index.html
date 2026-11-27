@@ -649,6 +649,33 @@
             color: #666;
             margin-top: 3px;
         }
+        .card-oferta.choque-bloqueado {
+            border-color: #f5c2c7;
+            background-color: #fff5f5;
+        }
+        .badge-choque-card {
+            background-color: #dc3545;
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-left: 4px;
+        }
+        .choque-aviso-card {
+            font-size: 10px;
+            color: #b02a37;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        .modal-acoes {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
         /* --- MODAL DE INFORMAÇÕES --- */
         .modal-overlay {
             position: fixed;
@@ -896,6 +923,21 @@
 
             <p><strong>Oferta em 2027.1:</strong></p>
             <ul class="modal-lista" id="modal-oferta-2027"></ul>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DE BLOQUEIO DE CHOQUE ==================== -->
+    <div class="modal-overlay" id="choque-modal" onclick="fecharModalChoque()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="fechar-modal" onclick="fecharModalChoque()">&times;</span>
+            <h2 style="color:#b02a37; border-bottom-color:#f5c2c7;">⚠ Choque de Horário Impedido</h2>
+            <p id="choque-modal-texto" style="line-height:1.45;"></p>
+            <ul class="modal-lista" id="choque-modal-detalhes" style="color:#842029; font-weight:bold;"></ul>
+            <p style="font-size:12px; color:#666;">Para adicionar esta turma, remova a(s) matéria(s) em conflito ou clique em <strong>Substituir na Grade</strong>.</p>
+            <div class="modal-acoes">
+                <button class="util-btn" onclick="fecharModalChoque()">Entendi</button>
+                <button class="util-btn danger" id="btn-substituir-choque">Substituir na Grade</button>
+            </div>
         </div>
     </div>
 
@@ -3562,7 +3604,10 @@
 
             const infoCurs = document.getElementById('info-cursando');
             if (creditosCursando > 0) {
-                infoCurs.innerText = ` | Cursando: ${creditosCursando} Cr. (${horasCursando}h)`;
+                const totalComCursandoCr = creditosSomados + creditosCursando;
+                const totalComCursandoCh = horasSomadas + horasCursando;
+                const pctTotal = ((totalComCursandoCr / TOTAL_CREDITOS) * 100).toFixed(1);
+                infoCurs.innerText = ` | Cursando: +${creditosCursando} Cr. (${horasCursando}h) → Total c/ cursando: ${totalComCursandoCr} Cr. (${pctTotal}%) • ${totalComCursandoCh.toLocaleString('pt-BR')}h`;
             } else {
                 infoCurs.innerText = '';
             }
@@ -3934,12 +3979,72 @@
             });
         }
 
+        function verificarChoqueComSelecionadas(candidata) {
+            const selecionadas = ofertas2027_1.filter(o => turmasSelecionadas.has(o.id) && o.id !== candidata.id);
+            const conflitos = [];
+            for (const sel of selecionadas) {
+                for (const sCand of candidata.slots) {
+                    for (const sSel of sel.slots) {
+                        if (sCand.dia === sSel.dia && sCand.inicioMin < sSel.fimMin && sSel.inicioMin < sCand.fimMin) {
+                            conflitos.push({
+                                turma: sel,
+                                dia: sCand.dia,
+                                faixaCand: `${sCand.inicio}-${sCand.fim}`,
+                                faixaSel: `${sSel.inicio}-${sSel.fim}`
+                            });
+                        }
+                    }
+                }
+            }
+            return conflitos;
+        }
+
+        function abrirModalChoque(candidata, conflitos) {
+            document.getElementById('choque-modal-texto').innerHTML =
+                `Não foi possível adicionar <strong>${candidata.codigo} (${candidata.turma}) — ${candidata.disciplina}</strong> porque há choque de horário com turma(s) já selecionada(s):`;
+
+            const ul = document.getElementById('choque-modal-detalhes');
+            ul.innerHTML = '';
+            const idsParaSubstituir = new Set();
+            conflitos.forEach(c => {
+                idsParaSubstituir.add(c.turma.id);
+                ul.innerHTML += `<li>${c.dia}: choque com <strong>${c.turma.codigo} (${c.turma.turma})</strong> — ${c.turma.disciplina} (${c.faixaSel})</li>`;
+            });
+
+            const btnSub = document.getElementById('btn-substituir-choque');
+            btnSub.onclick = () => {
+                idsParaSubstituir.forEach(id => turmasSelecionadas.delete(id));
+                turmasSelecionadas.add(candidata.id);
+                fecharModalChoque();
+                salvarProgresso();
+                renderizarSimulador();
+            };
+
+            document.getElementById('choque-modal').style.display = 'flex';
+        }
+
+        function fecharModalChoque() {
+            document.getElementById('choque-modal').style.display = 'none';
+        }
+
         function alternarTurmaSimulador(ofertaId) {
             if (turmasSelecionadas.has(ofertaId)) {
                 turmasSelecionadas.delete(ofertaId);
-            } else {
-                turmasSelecionadas.add(ofertaId);
+                salvarProgresso();
+                renderizarSimulador();
+                return;
             }
+
+            const candidata = ofertas2027_1.find(o => o.id === ofertaId);
+            if (!candidata) return;
+
+            const conflitos = verificarChoqueComSelecionadas(candidata);
+            if (conflitos.length > 0) {
+                abrirModalChoque(candidata, conflitos);
+                return;
+            }
+
+            turmasSelecionadas.add(ofertaId);
             salvarProgresso();
             renderizarSimulador();
         }
@@ -4080,6 +4185,8 @@
                 const isConf = conflitosIds.has(o.id);
                 const isExtra = isOfertaExtra(o);
                 const isMesmoCod = !isSel && gruposSelecionados.has(getGrupoTurma(o));
+                const choquesPrevios = (!isSel && !isMesmoCod) ? verificarChoqueComSelecionadas(o) : [];
+                const temChoquePrevio = choquesPrevios.length > 0;
 
                 const card = document.createElement('div');
                 card.className = [
@@ -4087,16 +4194,21 @@
                     isExtra ? 'extra' : '',
                     isSel ? 'selecionada' : '',
                     isMesmoCod ? 'mesmo-codigo' : '',
+                    temChoquePrevio ? 'choque-bloqueado' : '',
                     isConf ? 'conflito' : ''
                 ].filter(Boolean).join(' ');
                 card.onclick = () => alternarTurmaSimulador(o.id);
 
                 const extraBadge = isExtra ? `<span class="badge-extra">EXTRA</span>` : '';
+                const choqueBadge = temChoquePrevio ? `<span class="badge-choque-card">CHOQUE</span>` : '';
                 const jaEscolhidaTag = isMesmoCod ? `<span style="font-size:10px; font-weight:bold;">(Outra turma já selecionada)</span>` : '';
+                const choqueLinha = temChoquePrevio
+                    ? `<div class="choque-aviso-card">⚠ Choque com ${[...new Set(choquesPrevios.map(c => c.turma.codigo + ' (' + c.turma.turma + ')'))].join(', ')}</div>`
+                    : '';
 
                 card.innerHTML = `
                     <div class="oferta-topo">
-                        <span class="oferta-cod">${o.codigo} &bull; ${o.turma}${extraBadge}</span>
+                        <span class="oferta-cod">${o.codigo} &bull; ${o.turma}${extraBadge}${choqueBadge}</span>
                         <span class="badge-status badge-${statusFlux}">${labelSt}</span>
                     </div>
                     <div class="oferta-nome">${o.disciplina} ${jaEscolhidaTag}</div>
@@ -4104,6 +4216,7 @@
                     <div class="oferta-meta"><strong>Local:</strong> ${[o.pavilhao, o.sala].filter(Boolean).join(' — ') || 'A definir'}</div>
                     <div class="oferta-meta" style="color:#777;">${o.semestreCurto}</div>
                     <div class="oferta-horario">${o.horariosTexto}</div>
+                    ${choqueLinha}
                 `;
                 container.appendChild(card);
             });
