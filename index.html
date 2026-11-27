@@ -377,6 +377,19 @@
             color: #fff;
             border-color: #1976d2;
         }
+        .subtab-btn.extra {
+            background-color: #fdecea;
+            border-color: #f5c2c7;
+            color: #b02a37;
+        }
+        .subtab-btn.extra:hover {
+            background-color: #f8d7da;
+        }
+        .subtab-btn.extra.active {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+        }
 
         /* --- TABELAS DE GRADE SEMANAL --- */
         .table-wrap {
@@ -433,6 +446,10 @@
         .bloco-aula.pratica {
             background-color: #fff8e1;
             border-left-color: #f57c00;
+        }
+        .bloco-aula.extra {
+            background-color: #fdecea;
+            border-left-color: #dc3545;
         }
         .bloco-aula.conflito {
             background-color: #f8d7da;
@@ -528,9 +545,46 @@
             background-color: #e8f5e9;
             border-color: #4CAF50;
         }
+        .card-oferta.extra {
+            border-color: #f5c2c7;
+            background-color: #fff8f8;
+        }
+        .card-oferta.extra .oferta-cod {
+            color: #b02a37;
+        }
+        .card-oferta.selecionada {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        .card-oferta.selecionada .oferta-cod {
+            color: #1b5e20;
+        }
+        .card-oferta.mesmo-codigo {
+            background-color: #eceff1;
+            border-color: #cfd8dc;
+            color: #78909c;
+            opacity: 0.58;
+        }
+        .card-oferta.mesmo-codigo .oferta-cod,
+        .card-oferta.mesmo-codigo .oferta-nome,
+        .card-oferta.mesmo-codigo .oferta-meta,
+        .card-oferta.mesmo-codigo .oferta-horario {
+            color: #78909c !important;
+        }
         .card-oferta.conflito {
             border-color: #dc3545;
-            background-color: #fff5f5;
+            background-color: #f8d7da;
+            opacity: 1;
+        }
+        .badge-extra {
+            background-color: #f8d7da;
+            color: #b02a37;
+            border: 1px solid #f5c2c7;
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-left: 4px;
         }
         .oferta-topo {
             display: flex;
@@ -711,7 +765,7 @@
         <div class="card-box">
             <h3 id="titulo-grade-estatica" style="font-size:14px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
                 <span>Grade Semanal</span>
-                <span style="font-size:11px; font-weight:normal; color:#666;">Azul: Teórica (T) &bull; Laranja: Prática/Lab (P)</span>
+                <span style="font-size:11px; font-weight:normal; color:#666;">Azul: Teórica (T) &bull; Laranja: Prática/Lab (P) &bull; <strong style="color:#b02a37;">Vermelho: Extra</strong></span>
             </h3>
             <div class="table-wrap">
                 <table class="tabela-grade">
@@ -3728,13 +3782,25 @@
         // ============================================================
         // 5. ABA 2: HORÁRIOS 2027.1 (ESTÁTICO COM SUB-ABAS POR SEMESTRE)
         // ============================================================
+        function isOfertaExtra(o) {
+            const texto = `${o.semestre || ''} ${o.disciplina || ''}`;
+            return /extra/i.test(texto);
+        }
+
+        function getGrupoTurma(o) {
+            const t = String(o.turma || '').trim().toUpperCase();
+            const tipo = t.startsWith('P') ? 'P' : 'T';
+            return `${o.codigoNorm}__${tipo}`;
+        }
+
         function renderizarSubabasHorarios() {
             const box = document.getElementById('subtabs-semestres');
             box.innerHTML = '';
             semestresOfertaUnicos.forEach(sem => {
                 const sample = ofertas2027_1.find(o => o.semestre === sem);
+                const extraCls = (sample && isOfertaExtra(sample)) ? ' extra' : '';
                 const btn = document.createElement('button');
-                btn.className = 'subtab-btn' + (sem === semestreEstaticoAtual ? ' active' : '');
+                btn.className = 'subtab-btn' + extraCls + (sem === semestreEstaticoAtual ? ' active' : '');
                 btn.innerText = sample ? sample.semestreCurto : sem;
                 btn.onclick = () => {
                     semestreEstaticoAtual = sem;
@@ -3784,8 +3850,9 @@
                         achadas.forEach(item => {
                             const o = item.oferta;
                             const isPratica = String(o.turma || '').toUpperCase().startsWith('P');
+                            const isExtra = isOfertaExtra(o);
                             const isConf = conflitosIds.has(o.id);
-                            const cls = isConf ? 'conflito' : (isPratica ? 'pratica' : '');
+                            const cls = isConf ? 'conflito' : (isExtra ? 'extra' : (isPratica ? 'pratica' : ''));
                             td.innerHTML += `
                                 <div class="bloco-aula ${cls}">
                                     <div><strong>${o.codigo}</strong> (${o.turma})</div>
@@ -3837,10 +3904,12 @@
                 const matFlux = encontrarMateriaPorCodigoNorm(o.codigoNorm);
                 const statusFlux = matFlux ? getStatusMateria(matFlux) : 'liberada';
                 const labelSt = matFlux ? labelsStatus[statusFlux] : 'Optativa / Extra';
+                const isExtra = isOfertaExtra(o);
                 const tr = document.createElement('tr');
+                if (isExtra) tr.style.backgroundColor = '#fff8f8';
                 tr.innerHTML = `
-                    <td><strong>${o.codigo}</strong></td>
-                    <td>${o.disciplina}</td>
+                    <td style="${isExtra ? 'color:#b02a37;' : ''}"><strong>${o.codigo}</strong></td>
+                    <td style="${isExtra ? 'color:#b02a37; font-weight:bold;' : ''}">${o.disciplina}</td>
                     <td>${o.turma}</td>
                     <td>${o.chCr}</td>
                     <td>${o.professor}</td>
@@ -3986,23 +4055,51 @@
                 return;
             }
 
-            filtradas.forEach(o => {
+            // Grupos (codigoNorm + tipo T/P) que já possuem alguma turma selecionada
+            const gruposSelecionados = new Set(
+                selecionadas.map(s => getGrupoTurma(s))
+            );
+
+            // Ordena: 1º selecionadas, 2º disponíveis normais, 3º outras turmas da mesma disciplina/tipo já escolhida
+            const ordenadas = [...filtradas].sort((a, b) => {
+                const aSel = turmasSelecionadas.has(a.id);
+                const bSel = turmasSelecionadas.has(b.id);
+                const aOutroGrupo = !aSel && gruposSelecionados.has(getGrupoTurma(a));
+                const bOutroGrupo = !bSel && gruposSelecionados.has(getGrupoTurma(b));
+
+                const rankA = aSel ? 0 : (aOutroGrupo ? 2 : 1);
+                const rankB = bSel ? 0 : (bOutroGrupo ? 2 : 1);
+                return rankA - rankB;
+            });
+
+            ordenadas.forEach(o => {
                 const matFlux = encontrarMateriaPorCodigoNorm(o.codigoNorm);
                 const statusFlux = matFlux ? getStatusMateria(matFlux) : 'liberada';
                 const labelSt = matFlux ? labelsStatus[statusFlux] : 'Optativa / Extra';
                 const isSel = turmasSelecionadas.has(o.id);
                 const isConf = conflitosIds.has(o.id);
+                const isExtra = isOfertaExtra(o);
+                const isMesmoCod = !isSel && gruposSelecionados.has(getGrupoTurma(o));
 
                 const card = document.createElement('div');
-                card.className = `card-oferta ${isSel ? 'selecionada' : ''} ${isConf ? 'conflito' : ''}`;
+                card.className = [
+                    'card-oferta',
+                    isExtra ? 'extra' : '',
+                    isSel ? 'selecionada' : '',
+                    isMesmoCod ? 'mesmo-codigo' : '',
+                    isConf ? 'conflito' : ''
+                ].filter(Boolean).join(' ');
                 card.onclick = () => alternarTurmaSimulador(o.id);
+
+                const extraBadge = isExtra ? `<span class="badge-extra">EXTRA</span>` : '';
+                const jaEscolhidaTag = isMesmoCod ? `<span style="font-size:10px; font-weight:bold;">(Outra turma já selecionada)</span>` : '';
 
                 card.innerHTML = `
                     <div class="oferta-topo">
-                        <span class="oferta-cod">${o.codigo} &bull; ${o.turma}</span>
+                        <span class="oferta-cod">${o.codigo} &bull; ${o.turma}${extraBadge}</span>
                         <span class="badge-status badge-${statusFlux}">${labelSt}</span>
                     </div>
-                    <div class="oferta-nome">${o.disciplina}</div>
+                    <div class="oferta-nome">${o.disciplina} ${jaEscolhidaTag}</div>
                     <div class="oferta-meta"><strong>Prof.:</strong> ${o.professor} | <strong>CH-Cr:</strong> ${o.chCr}</div>
                     <div class="oferta-meta"><strong>Local:</strong> ${[o.pavilhao, o.sala].filter(Boolean).join(' — ') || 'A definir'}</div>
                     <div class="oferta-meta" style="color:#777;">${o.semestreCurto}</div>
