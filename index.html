@@ -671,6 +671,118 @@
             flex-wrap: wrap;
         }
 
+
+        /* --- CALCULADORA DE MÉDIAS UESC --- */
+        .calc-grid-top {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+        }
+        .avaliacao-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .avaliacao-row label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 82px;
+        }
+        .avaliacao-row input {
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 13px;
+            width: 95px;
+        }
+        .calc-resultado-box {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+        }
+        .calc-resultado-box.aprovado {
+            background: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        .calc-resultado-box.final {
+            background: #fff8e1;
+            border-color: #fb8c00;
+        }
+        .calc-resultado-box.sem-rendimento {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        .calc-media-grande {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .formula-box {
+            background: #f8f9fa;
+            border-left: 4px solid #2c3e50;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.55;
+            color: #333;
+        }
+        .formula-box code {
+            background: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .tabela-uesc-final {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 620px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .tabela-uesc-final th, .tabela-uesc-final td {
+            border: 1px solid #adb5bd;
+            padding: 6px 5px;
+        }
+        .tabela-uesc-final th {
+            background-color: #dee2e6;
+            color: #212529;
+            font-weight: bold;
+        }
+        .tabela-uesc-final td.row-header {
+            background-color: #dee2e6;
+            font-weight: bold;
+            color: #212529;
+            width: 42px;
+        }
+        .tabela-uesc-final td.cell-sem-rend {
+            background-color: #f8d7da;
+            color: #842029;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .tabela-uesc-final td.cell-aprovado {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            font-weight: bold;
+            letter-spacing: 1px;
+            font-size: 13px;
+        }
+        .tabela-uesc-final td.cell-ativa {
+            background-color: #ff9800 !important;
+            color: #fff !important;
+            font-weight: bold;
+            box-shadow: inset 0 0 0 2px #b71c1c;
+        }
+
         /* --- MODAL DE INFORMAÇÕES --- */
         .modal-overlay {
             position: fixed;
@@ -731,6 +843,7 @@
             <button class="tab-btn" id="btn-aba-horarios-estatico" onclick="trocarAba('horarios-estatico')">Horários 2027.1</button>
             <button class="tab-btn" id="btn-aba-simulador" onclick="trocarAba('simulador')">Simulador de Grade</button>
             <button class="tab-btn" id="btn-aba-planejamento" onclick="trocarAba('planejamento')">Previsão de Formatura</button>
+            <button class="tab-btn" id="btn-aba-calculadora" onclick="trocarAba('calculadora')">Calculadora de Médias</button>
         </div>
         <div class="util-actions">
             <button class="util-btn" onclick="exportarProgresso()">Exportar</button>
@@ -904,6 +1017,59 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- ==================== ABA 5: CALCULADORA DE MÉDIAS (UESC) ==================== -->
+    <div id="aba-calculadora" class="aba-secao">
+        <div class="calc-grid-top">
+            <div class="card-box">
+                <h2 style="font-size:15px;">Calculadora de Média e Final — UESC</h2>
+                <p style="font-size:12px; color:#555; margin-top:0;">
+                    Insira suas notas e os respectivos pesos (créditos/proporção). A média para aprovação direta na UESC é <strong>7,0</strong>.
+                </p>
+                <div id="lista-avaliacoes-calc"></div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
+                    <button class="util-btn primary" onclick="adicionarLinhaNota()">+ Adicionar Nota</button>
+                    <button class="util-btn" onclick="resetarNotasCalc()">Limpar Campos</button>
+                </div>
+            </div>
+
+            <div class="card-box" style="display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+                <div>
+                    <h2 style="font-size:15px;">Resultado</h2>
+                    <div class="calc-resultado-box" id="calc-resultado-box">
+                        <div style="font-size:12px; color:#555;">
+                            Acumulado: <strong id="calc-acumulado">0,00</strong> &bull; Total de pesos: <strong id="calc-total-pesos">0</strong>
+                        </div>
+                        <div class="calc-media-grande">
+                            Média: <span id="calc-media-valor">—</span>
+                        </div>
+                        <div id="calc-status-texto" style="font-size:14px; font-weight:bold; color:#2c3e50;">
+                            Preencha ao menos uma nota para calcular.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <strong>Regras e Fórmulas (Sistema UESC):</strong><br>
+                    &bull; Média para aprovação direta: <strong>7,0</strong><br>
+                    &bull; <code>Acumulado = (Nota 1 &times; Peso 1) + (Nota 2 &times; Peso 2) + ... + (Nota N &times; Peso N)</code><br>
+                    &bull; <code>Total de pesos = Peso 1 + Peso 2 + ... + Peso N</code><br>
+                    &bull; <code>Média = Acumulado / Total de pesos</code><br>
+                    &bull; Nota necessária na prova final: <code>Necessário = (5 - Média &times; 0,6) / 0,4</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-box">
+            <h3 style="font-size:14px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <span>Tabela de Referência — Nota Necessária na Prova Final (UESC)</span>
+                <span style="font-size:11px; font-weight:normal; color:#666;">Linha: parte inteira da média &bull; Coluna: casa decimal</span>
+            </h3>
+            <div class="table-wrap">
+                <table class="tabela-uesc-final" id="tabela-uesc-final"></table>
+            </div>
+        </div>
     </div>
 
     <!-- ==================== MODAL DE INFORMAÇÕES ==================== -->
@@ -3482,7 +3648,8 @@
                 'fluxograma': ['aba-fluxograma', 'btn-aba-fluxograma'],
                 'horarios-estatico': ['aba-horarios-estatico', 'btn-aba-horarios-estatico'],
                 'simulador': ['aba-simulador', 'btn-aba-simulador'],
-                'planejamento': ['aba-planejamento', 'btn-aba-planejamento']
+                'planejamento': ['aba-planejamento', 'btn-aba-planejamento'],
+                'calculadora': ['aba-calculadora', 'btn-aba-calculadora']
             };
             Object.keys(mapa).forEach(k => {
                 document.getElementById(mapa[k][0]).classList.remove('ativa');
@@ -3494,6 +3661,7 @@
             if (aba === 'horarios-estatico') renderizarHorariosEstaticos();
             if (aba === 'simulador') renderizarSimulador();
             if (aba === 'planejamento') renderizarPlanejamento();
+            if (aba === 'calculadora') calcularMediaUESC();
         }
 
         function exportarProgresso() {
@@ -4283,6 +4451,183 @@
 
         }
 
+
+        // ============================================================
+        // 8. ABA 5: CALCULADORA DE MÉDIAS & TABELA FINAL UESC
+        // ============================================================
+        const TABELA_FINAL_UESC = {
+            1: [null, null, null, null, null, null, "10,0", "9,9", "9,8", "9,7"],
+            2: ["9,5", "9,4", "9,2", "9,1", "8,9", "8,8", "8,6", "8,5", "8,3", "8,2"],
+            3: ["8,0", "7,9", "7,7", "7,6", "7,4", "7,3", "7,1", "7,0", "6,8", "6,7"],
+            4: ["6,5", "6,4", "6,2", "6,1", "5,9", "5,8", "5,6", "5,5", "5,3", "5,2"],
+            5: ["5,0", "4,9", "4,7", "4,6", "4,4", "4,3", "4,1", "4,0", "3,8", "3,7"],
+            6: ["3,5", "3,4", "3,2", "3,1", "2,9", "2,8", "2,6", "2,5", "2,3", "2,2"]
+        };
+
+        let avaliacoesCalc = [
+            { nota: "", peso: 1 },
+            { nota: "", peso: 1 },
+            { nota: "", peso: 1 }
+        ];
+
+        function renderizarLinhasAvaliacoes() {
+            const box = document.getElementById('lista-avaliacoes-calc');
+            if (!box) return;
+            box.innerHTML = '';
+
+            avaliacoesCalc.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'avaliacao-row';
+                row.innerHTML = `
+                    <label>Avaliação ${idx + 1}:</label>
+                    <input type="number" step="0.01" min="0" max="10" placeholder="Nota (0-10)" value="${item.nota}" oninput="atualizarCampoCalc(${idx}, 'nota', this.value)">
+                    <span style="font-size:12px; color:#555;">Peso:</span>
+                    <input type="number" step="0.1" min="0.1" max="100" placeholder="Peso" value="${item.peso}" style="width:75px;" oninput="atualizarCampoCalc(${idx}, 'peso', this.value)">
+                    ${avaliacoesCalc.length > 1 ? `<button class="util-btn danger" onclick="removerLinhaNota(${idx})" title="Remover">&times;</button>` : ''}
+                `;
+                box.appendChild(row);
+            });
+            calcularMediaUESC();
+        }
+
+        function atualizarCampoCalc(idx, campo, valor) {
+            avaliacoesCalc[idx][campo] = valor;
+            calcularMediaUESC();
+        }
+
+        function adicionarLinhaNota() {
+            avaliacoesCalc.push({ nota: "", peso: 1 });
+            renderizarLinhasAvaliacoes();
+        }
+
+        function removerLinhaNota(idx) {
+            avaliacoesCalc.splice(idx, 1);
+            renderizarLinhasAvaliacoes();
+        }
+
+        function resetarNotasCalc() {
+            avaliacoesCalc = [
+                { nota: "", peso: 1 },
+                { nota: "", peso: 1 },
+                { nota: "", peso: 1 }
+            ];
+            renderizarLinhasAvaliacoes();
+        }
+
+        function renderizarTabelaFinalUESC(mediaDestaque = null) {
+            const table = document.getElementById('tabela-uesc-final');
+            if (!table) return;
+
+            let intDestaque = null;
+            let decDestaque = null;
+            if (mediaDestaque !== null && !Number.isNaN(mediaDestaque)) {
+                const clamped = Math.max(0, Math.min(10, Number(mediaDestaque.toFixed(1))));
+                intDestaque = Math.floor(clamped + 1e-9);
+                decDestaque = Math.round((clamped - intDestaque) * 10);
+                if (decDestaque === 10) {
+                    intDestaque += 1;
+                    decDestaque = 0;
+                }
+            }
+
+            let htmlTbl = `<thead><tr><th></th>`;
+            for (let d = 0; d <= 9; d++) {
+                htmlTbl += `<th>0,${d}</th>`;
+            }
+            htmlTbl += `</tr></thead><tbody>`;
+
+            // Linha 1: 0,0 a 0,5 = SEM RENDIMENTO; 0,6 a 0,9 = valores
+            const ativoSemRend = (intDestaque === 1 && decDestaque !== null && decDestaque <= 5);
+            htmlTbl += `<tr><td class="row-header">1</td>`;
+            htmlTbl += `<td colspan="6" class="cell-sem-rend ${ativoSemRend ? 'cell-ativa' : ''}">SEM RENDIMENTO</td>`;
+            for (let d = 6; d <= 9; d++) {
+                const ativo = (intDestaque === 1 && decDestaque === d);
+                htmlTbl += `<td class="${ativo ? 'cell-ativa' : ''}">${TABELA_FINAL_UESC[1][d]}</td>`;
+            }
+            htmlTbl += `</tr>`;
+
+            // Linhas 2 a 6
+            for (let r = 2; r <= 6; r++) {
+                htmlTbl += `<tr><td class="row-header">${r}</td>`;
+                for (let d = 0; d <= 9; d++) {
+                    const ativo = (intDestaque === r && decDestaque === d);
+                    htmlTbl += `<td class="${ativo ? 'cell-ativa' : ''}">${TABELA_FINAL_UESC[r][d]}</td>`;
+                }
+                htmlTbl += `</tr>`;
+            }
+
+            // Linhas 7 a 10: APROVADO
+            const ativoAprov = (intDestaque !== null && intDestaque >= 7);
+            for (let r = 7; r <= 10; r++) {
+                htmlTbl += `<tr><td class="row-header">${r}</td>`;
+                if (r === 7) {
+                    htmlTbl += `<td colspan="10" rowspan="4" class="cell-aprovado ${ativoAprov ? 'cell-ativa' : ''}">APROVADO</td>`;
+                }
+                htmlTbl += `</tr>`;
+            }
+
+            htmlTbl += `</tbody>`;
+            table.innerHTML = htmlTbl;
+        }
+
+        function calcularMediaUESC() {
+            let acumulado = 0;
+            let totalPesos = 0;
+            let temNotaValida = false;
+
+            avaliacoesCalc.forEach(item => {
+                const nStr = String(item.nota).trim();
+                const p = Number(item.peso);
+                if (nStr !== '' && !Number.isNaN(Number(nStr)) && !Number.isNaN(p) && p > 0) {
+                    const n = Number(nStr);
+                    acumulado += n * p;
+                    totalPesos += p;
+                    temNotaValida = true;
+                }
+            });
+
+            const box = document.getElementById('calc-resultado-box');
+            const elAcum = document.getElementById('calc-acumulado');
+            const elPesos = document.getElementById('calc-total-pesos');
+            const elMedia = document.getElementById('calc-media-valor');
+            const elStatus = document.getElementById('calc-status-texto');
+
+            box.classList.remove('aprovado', 'final', 'sem-rendimento');
+
+            if (!temNotaValida || totalPesos <= 0) {
+                elAcum.innerText = '0,00';
+                elPesos.innerText = '0';
+                elMedia.innerText = '—';
+                elStatus.style.color = '#2c3e50';
+                elStatus.innerText = 'Preencha ao menos uma nota para calcular.';
+                renderizarTabelaFinalUESC(null);
+                return;
+            }
+
+            const media = acumulado / totalPesos;
+            const necessario = (5 - media * 0.6) / 0.4;
+
+            elAcum.innerText = acumulado.toFixed(2).replace('.', ',');
+            elPesos.innerText = Number(totalPesos.toFixed(2)).toString().replace('.', ',');
+            elMedia.innerText = media.toFixed(2).replace('.', ',');
+
+            if (media >= 7.0) {
+                box.classList.add('aprovado');
+                elStatus.style.color = '#1b5e20';
+                elStatus.innerText = 'APROVADO DIRETO! (Média ≥ 7,0)';
+            } else if (necessario > 10.0) {
+                box.classList.add('sem-rendimento');
+                elStatus.style.color = '#842029';
+                elStatus.innerText = `SEM RENDIMENTO — Precisaria de ${necessario.toFixed(2).replace('.', ',')} na final (acima de 10,0).`;
+            } else {
+                box.classList.add('final');
+                elStatus.style.color = '#e65100';
+                elStatus.innerText = `PROVA FINAL — Você precisa tirar ${Math.max(0, necessario).toFixed(2).replace('.', ',')} na final.`;
+            }
+
+            renderizarTabelaFinalUESC(media);
+        }
+
         // Inicialização
         const chkLibCurs = document.getElementById('chk-liberar-cursando');
         if (chkLibCurs) chkLibCurs.checked = liberarPorCursando;
@@ -4291,6 +4636,7 @@
         renderizarHorariosEstaticos();
         renderizarSimulador();
         renderizarPlanejamento();
+        renderizarLinhasAvaliacoes();
     </script>
 </body>
 </html>
