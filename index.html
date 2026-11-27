@@ -378,17 +378,12 @@
             border-color: #1976d2;
         }
         .subtab-btn.extra {
-            background-color: #fdecea;
-            border-color: #f5c2c7;
-            color: #b02a37;
-        }
-        .subtab-btn.extra:hover {
-            background-color: #f8d7da;
+            color: #c92a2a;
         }
         .subtab-btn.extra.active {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            color: #fff;
+            background: #1976d2;
+            border-color: #1976d2;
+            color: #ffccd5;
         }
 
         /* --- TABELAS DE GRADE SEMANAL --- */
@@ -447,9 +442,9 @@
             background-color: #fff8e1;
             border-left-color: #f57c00;
         }
-        .bloco-aula.extra {
-            background-color: #fdecea;
-            border-left-color: #dc3545;
+        .bloco-aula.extra .bloco-titulo-extra {
+            color: #c92a2a;
+            font-weight: bold;
         }
         .bloco-aula.conflito {
             background-color: #f8d7da;
@@ -545,12 +540,9 @@
             background-color: #e8f5e9;
             border-color: #4CAF50;
         }
-        .card-oferta.extra {
-            border-color: #f5c2c7;
-            background-color: #fff8f8;
-        }
-        .card-oferta.extra .oferta-cod {
-            color: #b02a37;
+        .card-oferta.extra .oferta-cod,
+        .card-oferta.extra .oferta-nome {
+            color: #c92a2a;
         }
         .card-oferta.selecionada {
             background-color: #e8f5e9;
@@ -650,11 +642,14 @@
             margin-top: 3px;
         }
         .card-oferta.choque-bloqueado {
-            border-color: #f5c2c7;
-            background-color: #fff5f5;
+            border-color: #fb8c00;
+            background-color: #fff3e0;
+        }
+        .card-oferta.choque-bloqueado:hover {
+            border-color: #ef6c00;
         }
         .badge-choque-card {
-            background-color: #dc3545;
+            background-color: #ef6c00;
             color: #fff;
             font-size: 9px;
             padding: 2px 6px;
@@ -664,7 +659,7 @@
         }
         .choque-aviso-card {
             font-size: 10px;
-            color: #b02a37;
+            color: #d84315;
             font-weight: bold;
             margin-top: 2px;
         }
@@ -771,6 +766,10 @@
             </div>
             <div class="fluxo-controles">
                 <input type="text" class="busca-fluxo" id="busca-fluxograma" placeholder="Buscar matéria por código ou nome no fluxograma..." oninput="filtrarFluxograma()">
+                <label class="chk-label" title="Considera as matérias roxas (Cursando) como concluídas apenas para destravar e visualizar as seguintes">
+                    <input type="checkbox" id="chk-liberar-cursando" onchange="alternarLiberarCursando()">
+                    Liberar seguintes das "Cursando"
+                </label>
                 <div class="modo-toggle">
                     <span>Ao clicar:</span>
                     <button class="modo-btn active-concluida" id="btn-modo-concluida" onclick="setModoClique('concluida')">✔ Concluída</button>
@@ -792,7 +791,7 @@
         <div class="card-box">
             <h3 id="titulo-grade-estatica" style="font-size:14px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
                 <span>Grade Semanal</span>
-                <span style="font-size:11px; font-weight:normal; color:#666;">Azul: Teórica (T) &bull; Laranja: Prática/Lab (P) &bull; <strong style="color:#b02a37;">Vermelho: Extra</strong></span>
+                <span style="font-size:11px; font-weight:normal; color:#666;">Azul: Teórica (T) &bull; Amarelo: Prática/Lab (P) &bull; <strong style="color:#c92a2a;">Nome em vermelho: Extra</strong></span>
             </h3>
             <div class="table-wrap">
                 <table class="tabela-grade">
@@ -3463,6 +3462,7 @@
         let turmasSelecionadas = new Set(JSON.parse(localStorage.getItem('uesc_turmas_2027_1')) || []);
 
         let modoClique = 'concluida'; // 'concluida' ou 'cursando'
+        let liberarPorCursando = JSON.parse(localStorage.getItem('uesc_liberar_cursando')) || false;
         const semestresOfertaUnicos = [...new Set(ofertas2027_1.map(o => o.semestre))];
         let semestreEstaticoAtual = semestresOfertaUnicos[0] || '';
 
@@ -3471,6 +3471,7 @@
             localStorage.setItem('uesc_forcadas', JSON.stringify([...forcadas]));
             localStorage.setItem('uesc_cursando', JSON.stringify([...cursando]));
             localStorage.setItem('uesc_turmas_2027_1', JSON.stringify([...turmasSelecionadas]));
+            localStorage.setItem('uesc_liberar_cursando', JSON.stringify(liberarPorCursando));
         }
 
         // ============================================================
@@ -3549,11 +3550,25 @@
             bCurs.className = 'modo-btn' + (modo === 'cursando' ? ' active-cursando' : '');
         }
 
+        function isPreReqAtendido(reqId) {
+            if (concluidas.has(reqId)) return true;
+            if (liberarPorCursando && cursando.has(reqId)) return true;
+            return false;
+        }
+
+        function alternarLiberarCursando() {
+            liberarPorCursando = Boolean(document.getElementById('chk-liberar-cursando')?.checked);
+            salvarProgresso();
+            atualizarFluxograma();
+            renderizarHorariosEstaticos();
+            renderizarSimulador();
+        }
+
         function getStatusMateria(materia) {
             if (!materia) return 'bloqueada';
             if (concluidas.has(materia.id)) return 'concluida';
             if (cursando.has(materia.id)) return 'cursando';
-            const reqConcluidos = materia.preReq.filter(req => concluidas.has(req)).length;
+            const reqConcluidos = materia.preReq.filter(req => isPreReqAtendido(req)).length;
             const reqTotal = materia.preReq.length;
             if (reqTotal === 0 || reqConcluidos === reqTotal) return 'liberada';
             if (reqConcluidos > 0 && reqConcluidos < reqTotal) return 'parcial';
@@ -3668,7 +3683,7 @@
                 verificarCascataRemocao(); 
             } else {
                 const materia = materias.find(m => m.id === id);
-                const reqConcluidos = materia.preReq.filter(req => concluidas.has(req)).length;
+                const reqConcluidos = materia.preReq.filter(req => isPreReqAtendido(req)).length;
                 if (reqConcluidos === materia.preReq.length) {
                     cursando.delete(id);
                     concluidas.add(id);
@@ -3715,7 +3730,7 @@
             } else {
                 materiasDoSemestre.forEach(m => {
                     if (!concluidas.has(m.id)) {
-                        const reqConcluidos = m.preReq.filter(req => concluidas.has(req)).length;
+                        const reqConcluidos = m.preReq.filter(req => isPreReqAtendido(req)).length;
                         if (reqConcluidos === m.preReq.length) {
                             cursando.delete(m.id);
                             concluidas.add(m.id);
@@ -3897,11 +3912,12 @@
                             const isPratica = String(o.turma || '').toUpperCase().startsWith('P');
                             const isExtra = isOfertaExtra(o);
                             const isConf = conflitosIds.has(o.id);
-                            const cls = isConf ? 'conflito' : (isExtra ? 'extra' : (isPratica ? 'pratica' : ''));
+                            const cls = isConf ? 'conflito' : (isPratica ? 'pratica' : '');
+                            const tituloCls = (!isConf && isExtra) ? 'bloco-titulo-extra' : '';
                             td.innerHTML += `
                                 <div class="bloco-aula ${cls}">
-                                    <div><strong>${o.codigo}</strong> (${o.turma})</div>
-                                    <div>${o.disciplina}</div>
+                                    <div class="${tituloCls}"><strong>${o.codigo}</strong> (${o.turma})</div>
+                                    <div class="${tituloCls}">${o.disciplina}</div>
                                     <div style="color:#555;">${[o.sala, o.pavilhao].filter(Boolean).join(' • ')}</div>
                                 </div>
                             `;
@@ -3951,7 +3967,7 @@
                 const labelSt = matFlux ? labelsStatus[statusFlux] : 'Optativa / Extra';
                 const isExtra = isOfertaExtra(o);
                 const tr = document.createElement('tr');
-                if (isExtra) tr.style.backgroundColor = '#fff8f8';
+
                 tr.innerHTML = `
                     <td style="${isExtra ? 'color:#b02a37;' : ''}"><strong>${o.codigo}</strong></td>
                     <td style="${isExtra ? 'color:#b02a37; font-weight:bold;' : ''}">${o.disciplina}</td>
@@ -4268,6 +4284,8 @@
         }
 
         // Inicialização
+        const chkLibCurs = document.getElementById('chk-liberar-cursando');
+        if (chkLibCurs) chkLibCurs.checked = liberarPorCursando;
         popularFiltroSemestresOferta();
         renderizarInterface();
         renderizarHorariosEstaticos();
